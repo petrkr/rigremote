@@ -129,7 +129,11 @@ def main():
                                 signal_power_threshold=global_settings['signal_power_threshold'],
                                 max_waiting_time=global_settings['max_waiting_time']
                             )
-        time.sleep(global_settings['check_interval'])
+        for _ in range(global_settings['check_interval']):
+            if not running:
+                break
+
+            time.sleep(1)
 
     rig.close()
     log_message("Service stopped gracefully.", level="info")
