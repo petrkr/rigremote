@@ -85,6 +85,17 @@ def handle_shutdown(signum, frame):
     log_message("Received shutdown signal, stopping service...", level="warning")
     running = False
 
+def parse_mode(mode):
+    if mode == "USB":
+        return Hamlib.RIG_MODE_USB
+    elif mode == "LSB":
+        return Hamlib.RIG_MODE_LSB
+    elif mode == "FM":
+        return Hamlib.RIG_MODE_FM
+    else:
+        raise ValueError(f"Invalid mode: {mode}")
+
+
 def main():
     config = load_config('config.yaml')
     global_settings = config['global_settings']
@@ -123,7 +134,7 @@ def main():
                                 rig=rig,
                                 set_name=set_folder,
                                 frequency=float(row['Frequency (MHz)']),
-                                mode=Hamlib.RIG_MODE_USB if row['Mode'] == "USB" else Hamlib.RIG_MODE_LSB,
+                                mode=parse_mode(row['Mode']),
                                 duration=int(row['Duration (minutes)']),
                                 files=files,
                                 signal_power_threshold=global_settings['signal_power_threshold'],
