@@ -1,0 +1,4 @@
+Start Date,End Date,Start Time,Duration (minutes),Frequency (MHz),Mode,Files
+11.08.2024,12.08.2024,12:00,10,14.25,USB,audio.wav;audio2.wav
+11.08.2024,12.08.2024,15:00,15,144.55,FM,audio.wav
+11.08.2024,12.08.2024,10:00,20,7.1,LSB,audio2.wav
