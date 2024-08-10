@@ -23,15 +23,20 @@ def log_message(message, level="info"):
 
 
 def initialize_rig(rig_address):
+    Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
     rig = Hamlib.Rig(Hamlib.RIG_MODEL_NETRIGCTL)
     rig.set_conf("rig_pathname", rig_address)
     rig.open()
+    log_message(f"Connected to rig at {rig_address}")
+    log_message(f"Rig model: {rig.get_info()}")
+    log_message(f"Rig frequency: {rig.get_freq()}")
+
     return rig
 
-def check_signal_power(rig, threshold, max_waiting_time):
+def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
     start_time = time.time()
     while running:
-        signal_power = rig.get_level(Hamlib.RIG_LEVEL_STRENGTH  )
+        signal_power = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH  )
         if signal_power < threshold:
             return True
         if time.time() - start_time > max_waiting_time:
