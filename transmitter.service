@@ -1,0 +1,10 @@
+[Unit]
+Description=Hamlib Transmitter Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/transmitter/transmitter.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
