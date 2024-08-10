@@ -96,6 +96,70 @@ def parse_mode(mode):
         raise ValueError(f"Invalid mode: {mode}")
 
 
+def parse_schedule(file_path):
+    schedules = []
+    try:
+        with open(file_path, 'r') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                start_date = datetime.strptime(row['Start Date'], "%d.%m.%Y")
+                end_date = datetime.strptime(row['End Date'], "%d.%m.%Y")
+                start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
+                duration_minutes = int(row['Duration (minutes)'])
+                frequency = float(row['Frequency (MHz)'])
+                mode = row['Mode']
+                files = row['Files'].split(';')
+
+                start_datetime = datetime.combine(start_date, start_time)
+                end_datetime = start_datetime + timedelta(minutes=duration_minutes)
+
+                # Create daily schedules within the date range
+                current_date = start_date
+                while current_date <= end_date:
+                    start_datetime = datetime.combine(current_date, start_time)
+                    end_datetime = start_datetime + timedelta(minutes=duration_minutes)
+
+                    schedules.append({
+                        'start_datetime': start_datetime,
+                        'end_datetime': end_datetime,
+                        'duration': duration_minutes,
+                        'frequency': frequency,
+                        'mode': mode,
+                        'files': files
+                    })
+
+                    current_date += timedelta(days=1)
+
+
+    except Exception as e:
+        print(f"Error reading schedule file '{file_path}': {e}")
+        exit(1)
+
+    return schedules
+
+
+def check_overlaps(schedules):
+    sorted_schedules = sorted(schedules, key=lambda x: x['start_datetime'])
+    for i in range(len(sorted_schedules)):
+        for j in range(i + 1, len(sorted_schedules)):
+            if sorted_schedules[j]['start_datetime'] < sorted_schedules[i]['end_datetime']:
+                print(f"Overlap detected between:")
+                print(f"  Schedule 1: {sorted_schedules[i]}")
+                print(f"  Schedule 2: {sorted_schedules[j]}")
+                exit(1)
+
+
+def load_and_check_schedules(file_paths):
+    all_schedules = []
+    for file_path in file_paths:
+        schedules = parse_schedule(file_path)
+        all_schedules.extend(schedules)
+
+    check_overlaps(all_schedules)
+    print("No overlaps detected across all schedules.")
+    return all_schedules
+
+
 def main():
     config = load_config('config.yaml')
     global_settings = config['global_settings']
@@ -109,6 +173,8 @@ def main():
 
     while running:
         now = datetime.now()
+        schedule_files = []
+        schedule = []
         for set_folder in os.listdir(transmit_sets_path):
             set_path = os.path.join(transmit_sets_path, set_folder)
             if os.path.isdir(set_path):
@@ -117,29 +183,25 @@ def main():
                     log_message(f"Warning: Schedule file not found in set {set_folder}. Skipping.", level="warning")
                     continue
 
-                with open(schedule_file, mode='r') as file:
-                    reader = csv.DictReader(file)
-                    schedule = list(reader)
-                    
-                    # Check for overlaps
-                    if check_for_overlaps(schedule):
-                        log_message(f"Error: Overlapping schedules detected in set {set_folder}. Exiting.", level="error")
-                        sys.exit(1)
-                    
-                    for row in schedule:
-                        start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
-                        if now.time() >= start_time and now.time() <= (datetime.combine(datetime.today(), start_time) + timedelta(minutes=int(row['Duration (minutes)']))).time():
-                            files = row['Files'].split(';')
-                            transmit(
-                                rig=rig,
-                                set_name=set_folder,
-                                frequency=float(row['Frequency (MHz)']),
-                                mode=parse_mode(row['Mode']),
-                                duration=int(row['Duration (minutes)']),
-                                files=files,
-                                signal_power_threshold=global_settings['signal_power_threshold'],
-                                max_waiting_time=global_settings['max_waiting_time']
-                            )
+                schedule_files.append(schedule_file)
+
+                schedule = load_and_check_schedules(schedule_files)
+                print(schedule)
+
+        for row in schedule:
+            start_time = row['start_datetime'].time()
+            if now.time() >= start_time and now.time() <= (datetime.combine(datetime.today(), start_time) + timedelta(minutes=int(row['Duration (minutes)']))).time():
+                files = row['Files'].split(';')
+                transmit(
+                    rig=rig,
+                    set_name=set_folder,
+                    frequency=float(row['frequency']),
+                    mode=parse_mode(row['mode']),
+                    duration=int(row['duration']),
+                    files=files,
+                    signal_power_threshold=global_settings['signal_power_threshold'],
+                    max_waiting_time=global_settings['max_waiting_time']
+                )
         for _ in range(global_settings['check_interval']):
             if not running:
                 break
