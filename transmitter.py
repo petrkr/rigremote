@@ -36,7 +36,7 @@ def initialize_rig(rig_address):
 def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
     start_time = time.time()
     while running:
-        signal_power = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH  )
+        signal_power = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH)
         if signal_power < threshold:
             return True
         if time.time() - start_time > max_waiting_time:
@@ -60,7 +60,7 @@ def transmit(rig, set_name, frequency, mode, duration, files, signal_power_thres
         
         log_message(f"Finished transmission of {files}")
     else:
-        log_message(f"Signal power threshold not met. Transmission aborted.", level="error")
+        log_message("Signal power threshold not met. Transmission aborted.", level="error")
 
 def check_for_overlaps(schedule):
     events = []
@@ -143,7 +143,7 @@ def check_overlaps(schedules):
     for i in range(len(sorted_schedules)):
         for j in range(i + 1, len(sorted_schedules)):
             if sorted_schedules[j]['start_datetime'] < sorted_schedules[i]['end_datetime']:
-                print(f"Overlap detected between:")
+                print("Overlap detected between:")
                 print(f"  Schedule 1: {sorted_schedules[i]}")
                 print(f"  Schedule 2: {sorted_schedules[j]}")
                 exit(1)
