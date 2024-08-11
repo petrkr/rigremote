@@ -1,0 +1,6 @@
+global_settings:
+  rig_address: localhost
+  check_interval: 60  # Seconds between checking schedules
+  signal_power_threshold: 10  # RF power threshold
+  max_waiting_time: 300  # Maximum waiting time in seconds
+transmission_sets_path: /mnt/data/sstv/
