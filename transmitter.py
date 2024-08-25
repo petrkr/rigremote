@@ -91,7 +91,12 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
 
     for file in glob("*.wav", root_dir=set_folder):
         log_message(f"Transmitting {file}...")
-        pygame.mixer.music.load(os.path.join(set_folder, file))
+        try:
+            pygame.mixer.music.load(os.path.join(set_folder, file))
+        except pygame.error as e:
+            log_message(f"Error loading audio file '{file}': {e}, skipping", "warning")
+            continue
+
         pygame.mixer.music.play()
 
         while pygame.mixer.music.get_busy():
