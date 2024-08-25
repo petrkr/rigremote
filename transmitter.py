@@ -87,9 +87,9 @@ def handle_shutdown(signum, frame):
 
 def parse_mode(mode):
     if mode == "USB":
-        return Hamlib.RIG_MODE_USB
+        return Hamlib.RIG_MODE_PKTUSB
     elif mode == "LSB":
-        return Hamlib.RIG_MODE_LSB
+        return Hamlib.RIG_MODE_PKTLSB
     elif mode == "FM":
         return Hamlib.RIG_MODE_FM
     else:
