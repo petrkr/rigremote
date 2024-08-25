@@ -277,6 +277,7 @@ def main():
                 log_message(f"Interrupted by user.")
                 break
 
+        log_message(f"Waiting {global_settings['check_interval']} seconds for next loop...")
         for _ in range(global_settings['check_interval']):
             if not running:
                 break
