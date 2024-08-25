@@ -90,12 +90,20 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
         return
 
     for file in glob("*.wav", root_dir=set_folder):
+        log_message(f"Transmitting {file}...")
+        pygame.mixer.music.load(os.path.join(set_folder, file))
+        pygame.mixer.music.play()
+
+        while pygame.mixer.music.get_busy():
+            if not running:
+                pygame.mixer.music.stop()
+                break
+
+            time.sleep(1)
+
         if not running:
             log_message(f"Transmission of {set_folder} interrupted by user.")
             break
-
-        log_message(f"Transmitting {file}...")
-        time.sleep(5)
 
         log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
         time.sleep(pause)
