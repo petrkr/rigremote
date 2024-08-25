@@ -185,7 +185,7 @@ def parse_schedule(file_path):
 
 
     except Exception as e:
-        print(f"Error reading schedule file '{file_path}': {e}")
+        log_message(f"Error reading schedule file '{file_path}': {e}", "error")
         exit(1)
 
     return schedules
@@ -230,7 +230,7 @@ def load_and_check_schedules(transmit_sets_path):
         all_schedules.extend(schedules)
 
     check_overlaps(all_schedules)
-    print("No overlaps detected across all schedules.")
+    log_message("No overlaps detected across all schedules.")
     return all_schedules
 
 
