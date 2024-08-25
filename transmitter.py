@@ -12,7 +12,31 @@ import csv
 # Rig control
 import Hamlib
 
+# Audio playback
+import pygame
+import pygame._sdl2.audio as sdl2_audio
+
 running = True
+
+
+### Audio playback functions
+def _get_audio_devices(capture_devices: bool = False):
+    init_by_me = not pygame.mixer.get_init()
+    if init_by_me:
+        pygame.mixer.init()
+    devices = tuple(sdl2_audio.get_audio_device_names(capture_devices))
+    if init_by_me:
+        pygame.mixer.quit()
+    return devices
+
+
+def get_audio_output_device(device_name):
+    devices = _get_audio_devices()
+    for device in devices:
+        if device_name in device:
+            return device
+    return None
+
 
 def load_config(config_file):
     with open(config_file, 'r') as file:
@@ -194,6 +218,11 @@ def main():
     config = load_config('config.yaml')
     global_settings = config['global_settings']
     transmit_sets_path = config['transmission_sets_path']
+    audio_device = get_audio_output_device(global_settings['audio_device_name'])
+
+    if not audio_device:
+        log_message(f"Error: Audio device '{global_settings['audio_device_name']}' not found.", "error")
+        sys.exit(1)
 
     if not os.path.exists(transmit_sets_path):
         log_message(f"Error: Transmition directory '{transmit_sets_path}' does not exist.", "error")
