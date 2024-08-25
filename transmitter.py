@@ -98,6 +98,7 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
             continue
 
         rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_ON)
+        time.sleep(1)
         pygame.mixer.music.play()
 
         while pygame.mixer.music.get_busy():
