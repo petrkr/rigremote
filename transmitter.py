@@ -178,6 +178,10 @@ def parse_schedule(file_path):
                 while current_date <= end_date:
                     start_datetime = datetime.combine(current_date, start_time)
                     end_datetime = start_datetime + timedelta(minutes=duration_minutes)
+                    if end_datetime < datetime.now():
+                        log_message(f"Skipping past schedule: {start_datetime}")
+                        current_date += timedelta(days=1)
+                        continue
 
                     schedules.append({
                         'set_folder': set_folder,
