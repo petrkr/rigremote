@@ -191,15 +191,25 @@ def parse_schedule(file_path):
     return schedules
 
 
+def print_schedules(schedules, log_level="info"):
+    for row in schedules:
+        log_message(f"Set: {row['set_folder']} \
+Start: {row['start_datetime']} \
+For: {row['duration']} minutes \
+Freq: {row['frequency']} MHz \
+Mode: {row['mode']} \
+Power: {row['power']} W \
+Pause: {row['pause']} sec", log_level)
+
+
 def check_overlaps(schedules):
     sorted_schedules = sorted(schedules, key=lambda x: x['start_datetime'])
     for i in range(len(sorted_schedules)):
         for j in range(i + 1, len(sorted_schedules)):
             if sorted_schedules[j]['start_datetime'] < sorted_schedules[i]['end_datetime']:
-                print("Overlap detected between:")
-                print(f"  Schedule 1: {sorted_schedules[i]}")
-                print(f"  Schedule 2: {sorted_schedules[j]}")
-                exit(1)
+                log_message("Overlap detected between:", "warning")
+                print_schedules([sorted_schedules[i], sorted_schedules[j]], log_level="warning")
+                raise ValueError("Overlapping schedules detected.")
 
 
 def load_and_check_schedules(transmit_sets_path):
@@ -248,12 +258,16 @@ def main():
         log_message(f"Error initializing audio: {e}", level="error")
         sys.exit(1)
 
-
+    schedules = []
     while running:
         now = datetime.now()
-        schedules = load_and_check_schedules(transmit_sets_path)
+        try:
+            schedules = load_and_check_schedules(transmit_sets_path)
+        except Exception as e:
+            log_message(f"Error loading schedules: {e}", level="warning")
 
-        print(schedules)
+        log_message("Current schedules:", "info")
+        print_schedules(schedules)
 
         for row in schedules:
             set_folder = row['set_folder']
