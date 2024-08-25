@@ -97,6 +97,7 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
             log_message(f"Error loading audio file '{file}': {e}, skipping", "warning")
             continue
 
+        rig.set_ptt(Hamlib.RIG_PTT_ON)
         pygame.mixer.music.play()
 
         while pygame.mixer.music.get_busy():
@@ -108,9 +109,11 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
 
         if not running:
             log_message(f"Transmission of {set_folder} interrupted by user.")
+            rig.set_ptt(Hamlib.RIG_PTT_OFF)
             break
 
         log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
+        rig.set_ptt(Hamlib.RIG_PTT_OFF)
         time.sleep(pause)
 
     log_message(f"Finished transmission of {set_folder}")
