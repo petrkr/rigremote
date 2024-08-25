@@ -60,7 +60,7 @@ def initialize_rig(rig_address):
     log_message(f"Rig model: {rig.get_info()}")
     log_message(f"Rig frequency: {rig.get_freq()} Hz")
     log_message(f"Rig mode: {rig.get_mode()}")
-    log_message(f"Rig power: {int(rig.get_level_f("RFPOWER") * 100)} W")
+    log_message(f"Rig power: {int(rig.get_level_f('RFPOWER') * 100)} W")
 
     return rig
 
