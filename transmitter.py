@@ -1,11 +1,15 @@
 import os
-import csv
 import signal
 import sys
 from glob import glob
 import time
 from datetime import datetime, timedelta
+
+# Configuration
 import yaml
+import csv
+
+# Rig control
 import Hamlib
 
 running = True
