@@ -1,0 +1,13 @@
+[Unit]
+Description=RIG Control daemon - %i
+Requires=network.target
+After=network.target
+
+[Service]
+EnvironmentFile=-/etc/default/rigctld.%i
+ExecStart=/bin/sh -c "/usr/bin/rigctld -m ${RIG_ID} -r ${PORT:-/dev/ttyUSB0}"
+Restart=on-failure
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
