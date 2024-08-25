@@ -265,12 +265,17 @@ def main():
             else:
                 log_message(f"This schedule is not active at the moment. Time: "+ str(row['start_datetime']))
 
+            if not running:
+                log_message(f"Interrupted by user.")
+                break
+
         for _ in range(global_settings['check_interval']):
             if not running:
                 break
 
             time.sleep(1)
 
+    pygame.mixer.quit()
     rig.close()
     log_message("Service stopped gracefully.", level="info")
 
