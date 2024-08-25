@@ -50,6 +50,8 @@ def log_message(message, level="info"):
     elif level == "error":
         print(f"ERROR: {message}", file=sys.stderr)
 
+    sys.out.flush()
+
 
 def initialize_rig(rig_address):
     Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
