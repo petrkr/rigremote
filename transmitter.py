@@ -46,7 +46,7 @@ def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
         time.sleep(10)
     return False
 
-def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, duration, power, pause, signal_power_threshold, max_waiting_time):
+def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal_power_threshold, max_waiting_time):
     log_message(f"Starting transmission of {set_folder} on {frequency} MHz, Power: {power} W")
 
     rig.set_freq(Hamlib.RIG_VFO_CURR, frequency * 1e6)
@@ -67,7 +67,7 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, duration, power, pau
         log_message(f"Transmitting {file}...")
         time.sleep(5)
 
-        log_message(f"Finished transmitting {file}. Waiting for next one")
+        log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
         time.sleep(pause)
 
     log_message(f"Finished transmission of {set_folder}")
@@ -213,7 +213,6 @@ def main():
                     set_folder=set_folder,
                     frequency=float(row['frequency']),
                     mode=parse_mode(row['mode']),
-                    duration=int(row['duration']),
                     pause=row['pause'],
                     power=row['power'],
                     signal_power_threshold=global_settings['signal_power_threshold'],
