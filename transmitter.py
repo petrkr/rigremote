@@ -232,6 +232,15 @@ def main():
 
     rig = initialize_rig(global_settings['rig_address'])
 
+    log_message("Initializing audio", level="info")
+
+    try:
+        pygame.mixer.init(devicename=audio_device)
+    except Exception as e:
+        log_message(f"Error initializing audio: {e}", level="error")
+        sys.exit(1)
+
+
     while running:
         now = datetime.now()
         schedules = load_and_check_schedules(transmit_sets_path)
