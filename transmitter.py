@@ -50,7 +50,7 @@ def log_message(message, level="info"):
     elif level == "error":
         print(f"ERROR: {message}", file=sys.stderr)
 
-    sys.out.flush()
+    sys.stdout.flush
 
 
 def initialize_rig(rig_address):
