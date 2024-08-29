@@ -3,7 +3,7 @@ Description=Trasmitter scheduler editor
 After=network.target
 
 [Service]
-WorkingDirectory=/opt/trasmitter
+WorkingDirectory=/opt/transmitter
 ExecStart=/usr/bin/gunicorn --workers 3 --bind [::]:80 editor:app
 
 [Install]
