@@ -33,7 +33,7 @@
                     <td><input type="text" name="End Date" value="{{ row['End Date'] }}" class="datepicker"></td>
                     <td><input type="text" name="Start Time" value="{{ row['Start Time'] }}"></td>
                     <td><input type="number" name="Duration (minutes)" value="{{ row['Duration (minutes)'] }}"></td>
-                    <td><input type="number" step="0.1" name="Frequency (MHz)" value="{{ row['Frequency (MHz)'] }}"></td>
+                    <td><input type="number" step="0.001" name="Frequency (MHz)" value="{{ row['Frequency (MHz)'] }}"></td>
                     <td>
                         <select name="Mode">
                             <option value="FM" {% if row['Mode'] == 'FM' %}selected{% endif %}>FM</option>
@@ -69,7 +69,7 @@
                         <td><input type="text" name="End Date" value="" class="datepicker"></td>
                         <td><input type="text" name="Start Time" value=""></td>
                         <td><input type="number" name="Duration (minutes)" value=""></td>
-                        <td><input type="number" step="0.1" name="Frequency (MHz)" value=""></td>
+                        <td><input type="number" step="0.001" name="Frequency (MHz)" value=""></td>
                         <td>
                             <select name="Mode">
                                 <option value="FM">FM</option>
