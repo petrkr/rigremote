@@ -152,6 +152,8 @@ def parse_mode(mode):
         return Hamlib.RIG_MODE_PKTLSB
     elif mode == "FM":
         return Hamlib.RIG_MODE_FM
+    elif mode == "AM":
+        return Hamlib.RIG_MODE_AM
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
