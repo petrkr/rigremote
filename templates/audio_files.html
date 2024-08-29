@@ -46,10 +46,10 @@
             $(".play-button").click(function() {
                 var file = $(this).data("file");
                 var player = $("#audio-player");
-                player.attr("src", "{{ url_for('static', filename='data') }}/{{ folder_name }}/" + file);
+                player.attr("src", "/stream_audio/{{ folder_name }}/" + file);
                 player.show()[0].play();
             });
-    
+
             // Confirm before deleting an audio file
             $(".delete-audio-button").click(function() {
                 if (confirm('Are you sure you want to delete this audio file?')) {

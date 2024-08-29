@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, abort
 import os
 import pandas as pd
 
@@ -74,6 +74,16 @@ def delete_audio_file(folder_name, file_name):
         os.remove(file_path)
     return redirect(url_for('manage_audio', folder_name=folder_name))
 
+# Route to stream audio files
+@app.route('/stream_audio/<folder_name>/<file_name>')
+def stream_audio(folder_name, file_name):
+    folder_path = os.path.join(BASE_DIR, folder_name)
+    file_path = os.path.join(folder_path, file_name)
+
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=False)
+    else:
+        abort(404)  # File not found
 
 if __name__ == '__main__':
     app.run("::", debug=True)
