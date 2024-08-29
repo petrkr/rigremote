@@ -71,18 +71,6 @@ def manage_audio(folder_name):
         abort(403)  # Forbidden access
 
     audio_files = glob("*.wav", root_dir=safe_folder_path)
-
-    if request.method == 'POST':
-        if 'audio_file' in request.files:
-            file = request.files['audio_file']
-            if file.filename.endswith('.wav'):
-                safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file.filename))
-                if not safe_file_path.startswith(base_dir):
-                    abort(403)
-
-                file.save(safe_file_path)
-            return redirect(url_for('manage_audio', folder_name=folder_name))
-
     return render_template('audio_files.html', folder_name=folder_name, audio_files=audio_files)
 
 # Route to Upload Audio File
