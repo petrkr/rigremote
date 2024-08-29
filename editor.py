@@ -92,7 +92,7 @@ def upload_audio_file(folder_name):
     if file.filename == '':
         return "No selected file", 400
 
-    if file.filename.endswith('.wav'):
+    if file.filename.lower().endswith(('.wav', '.mp3')):
         safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file.filename))
         if not safe_file_path.startswith(base_dir):
             abort(403)
