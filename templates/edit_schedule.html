@@ -90,9 +90,11 @@
                 $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
             });
 
-            // Delete row
+            // Delete row with confirmation
             $(document).on('click', '.delete-button', function() {
-                $(this).closest('tr').remove();
+                if (confirm('Are you sure you want to delete this row?')) {
+                    $(this).closest('tr').remove();
+                }
             });
 
             // Save changes with AJAX

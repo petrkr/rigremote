@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Files - {{ folder_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Manage Audio Files - {{ folder_name }}</h1>
+    
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+        <input type="file" name="audio_file" accept=".wav">
+        <button type="submit">Upload</button>
+    </form>
+    
+    <table id="audio-table">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in audio_files %}
+            <tr>
+                <td>{{ file }}</td>
+                <td>
+                    <button type="button" class="play-button" data-file="{{ file }}">Play</button>
+                    <form method="post" action="{{ url_for('delete_audio_file', folder_name=folder_name, file_name=file) }}" class="delete-audio-form" style="display:inline;">
+                        <button type="button" class="delete-audio-button">Delete</button>
+                    </form>
+                </td>   
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('index') }}">Back to folder list</a>
+
+    <audio id="audio-player" controls style="display:none;"></audio>
+
+    <script>
+        $(document).ready(function() {
+            $(".play-button").click(function() {
+                var file = $(this).data("file");
+                var player = $("#audio-player");
+                player.attr("src", "{{ url_for('static', filename='data') }}/{{ folder_name }}/" + file);
+                player.show()[0].play();
+            });
+    
+            // Confirm before deleting an audio file
+            $(".delete-audio-button").click(function() {
+                if (confirm('Are you sure you want to delete this audio file?')) {
+                    $(this).closest('form').submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

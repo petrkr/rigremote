@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Editor</title>
+    <title>Folder List</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Schedule Editor</h1>
+    <h1>Available Folders</h1>
     
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    
-    <div class="actions">
-        <a href="{{ url_for('create_folder') }}" class="button">Create/Add New Folder</a>
-    </div>
+    <table id="folder-table">
+        <thead>
+            <tr>
+                <th>Folder Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for folder in folders %}
+            <tr>
+                <td>{{ folder }}</td>
+                <td>
+                    <a href="{{ url_for('edit_schedule', folder_name=folder) }}">Edit Schedule</a> |
+                    <a href="{{ url_for('manage_audio', folder_name=folder) }}">Manage Audio Files</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <h2>Select a folder to edit the schedule</h2>
-    <ul class="folder-list">
-        {% for folder in subfolders %}
-            <li><a href="{{ url_for('edit_schedule', folder_name=folder) }}">{{ folder }}</a></li>
-        {% endfor %}
-    </ul>
+    <form method="post" action="{{ url_for('create_folder') }}">
+        <button type="submit">Create/Add Folder</button>
+    </form>
 </body>
 </html>
