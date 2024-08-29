@@ -43,7 +43,9 @@ def load_config(config_file):
         return yaml.safe_load(file)
 
 def log_message(message, level="info"):
-    if level == "info":
+    if level == "debug":
+        print(f"DEBUG: {message}")
+    elif level == "info":
         print(f"INFO: {message}")
     elif level == "warning":
         print(f"WARNING: {message}", file=sys.stderr)
@@ -185,7 +187,7 @@ def parse_schedule(file_path):
                     start_datetime = datetime.combine(current_date, start_time)
                     end_datetime = start_datetime + timedelta(minutes=duration_minutes)
                     if end_datetime < datetime.now():
-                        log_message(f"Skipping past schedule: {start_datetime}")
+                        log_message(f"Skipping past schedule: {start_datetime}", "debug")
                         current_date += timedelta(days=1)
                         continue
 
