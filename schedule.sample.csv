@@ -1,4 +1,4 @@
-Start Date,End Date,Start Time,Duration (minutes),Frequency (MHz),Mode,Power (W),Pause (sec)
-11.08.2024,12.08.2024,12:00,10,14.25,USB,100,30
-11.08.2024,12.08.2024,15:00,15,144.55,FM,50,30
-11.08.2024,12.08.2024,10:00,20,7.1,LSB,100,30
+Start Date;End Date;Start Time;Duration (minutes);Frequency (MHz);Mode;Power (W);Pause (sec)
+11.08.2024;12.08.2024;12:00;10;14.25;USB;100;30
+11.08.2024;12.08.2024;15:00;15;144.55;FM;50;30
+11.08.2024;12.08.2024;10:00;20;7.1;LSB;100;30

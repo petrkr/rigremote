@@ -161,7 +161,7 @@ def parse_schedule(file_path):
     set_folder = os.path.dirname(file_path)
     try:
         with open(file_path, 'r') as csvfile:
-            reader = csv.DictReader(csvfile)
+            reader = csv.DictReader(csvfile, delimiter=';')
             for row in reader:
                 start_date = datetime.strptime(row['Start Date'], "%d.%m.%Y")
                 end_date = datetime.strptime(row['End Date'], "%d.%m.%Y")

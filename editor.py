@@ -27,7 +27,7 @@ def create_folder():
                 'Start Date', 'End Date', 'Start Time', 'Duration (minutes)',
                 'Frequency (MHz)', 'Mode', 'Power (W)', 'Pause (sec)'
             ])
-            df.to_csv(csv_path, index=False)
+            df.to_csv(csv_path, index=False, sep=';')
             flash('Folder created successfully!', 'success')
         else:
             flash('Folder already exists!', 'error')
@@ -51,11 +51,11 @@ def edit_schedule(folder_name):
         data = request.form.to_dict(flat=False)
         df = pd.DataFrame(data)
 
-        df.to_csv(csv_path, index=False)
+        df.to_csv(csv_path, index=False, sep=';')
         flash('Schedule updated successfully!', 'success')
         return redirect(url_for('index'))
 
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, sep=';')
     return render_template('edit_schedule.html', folder_name=folder_name, data=df.to_dict(orient='records'))
 
 # Route to Manage Audio Files
