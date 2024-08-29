@@ -11,8 +11,8 @@
 </head>
 <body>
     <h1>Edit Schedule - {{ folder_name }}</h1>
-    <form method="post">
-        <table>
+    <form id="schedule-form" method="post">
+        <table id="schedule-table">
             <thead>
                 <tr>
                     <th>Start Date</th>
@@ -45,14 +45,14 @@
                     <td><input type="number" name="Power (W)" value="{{ row['Power (W)'] }}"></td>
                     <td><input type="number" name="Pause (sec)" value="{{ row['Pause (sec)'] }}"></td>
                     <td>
-                        <button type="submit" name="delete_row" value="{{ loop.index0 }}" class="delete-button">Delete</button>
+                        <button type="button" class="delete-button">Delete</button>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         <div class="form-actions">
-            <button type="submit" name="add_row">Add New Row</button>
+            <button type="button" id="add-row-button">Add New Row</button>
             <button type="submit">Save Changes</button>
         </div>
     </form>
@@ -60,6 +60,40 @@
     <script>
         $(document).ready(function() {
             $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
+
+            // Add new row
+            $("#add-row-button").click(function() {
+                var newRow = `
+                    <tr>
+                        <td><input type="text" name="Start Date" value="" class="datepicker"></td>
+                        <td><input type="text" name="End Date" value="" class="datepicker"></td>
+                        <td><input type="text" name="Start Time" value=""></td>
+                        <td><input type="number" name="Duration (minutes)" value=""></td>
+                        <td><input type="number" step="0.1" name="Frequency (MHz)" value=""></td>
+                        <td>
+                            <select name="Mode">
+                                <option value="FM">FM</option>
+                                <option value="USB">USB</option>
+                                <option value="LSB">LSB</option>
+                                <option value="AM">AM</option>
+                            </select>
+                        </td>
+                        <td><input type="number" name="Power (W)" value=""></td>
+                        <td><input type="number" name="Pause (sec)" value=""></td>
+                        <td>
+                            <button type="button" class="delete-button">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                $("#schedule-table tbody").append(newRow);
+                $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
+            });
+
+            // Delete row
+            $(document).on('click', '.delete-button', function() {
+                $(this).closest('tr').remove();
+            });
+
         });
     </script>
 </body>

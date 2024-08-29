@@ -40,36 +40,11 @@ def edit_schedule(folder_name):
     csv_path = os.path.join(BASE_DIR, folder_name, 'schedule.csv')
 
     if request.method == 'POST':
-        # Determine if we are adding or deleting rows
-        if 'add_row' in request.form:
-            df = pd.read_csv(csv_path)
-            new_row = {
-                'Start Date': '',
-                'End Date': '',
-                'Start Time': '',
-                'Duration (minutes)': '',
-                'Frequency (MHz)': '',
-                'Mode': 'FM',  # Default value for Mode
-                'Power (W)': '',
-                'Pause (sec)': ''
-            }
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df.to_csv(csv_path, index=False)
-            return redirect(url_for('edit_schedule', folder_name=folder_name))
-
-        elif 'delete_row' in request.form:
-            df = pd.read_csv(csv_path)
-            index = int(request.form['delete_row'])
-            df = df.drop(index)
-            df.to_csv(csv_path, index=False)
-            return redirect(url_for('edit_schedule', folder_name=folder_name))
-
-        else:
-            data = request.form.to_dict(flat=False)
-            df = pd.DataFrame(data)
-            df.to_csv(csv_path, index=False)
-            flash('Schedule updated successfully!', 'success')
-            return redirect(url_for('index'))
+        data = request.form.to_dict(flat=False)
+        df = pd.DataFrame(data)
+        df.to_csv(csv_path, index=False)
+        flash('Schedule updated successfully!', 'success')
+        return redirect(url_for('index'))
 
     df = pd.read_csv(csv_path)
     return render_template('edit_schedule.html', folder_name=folder_name, data=df.to_dict(orient='records'))
