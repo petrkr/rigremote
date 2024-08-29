@@ -271,6 +271,7 @@ def main():
         pygame.mixer.init(devicename=audio_device)
     except Exception as e:
         log_message(f"Error initializing audio: {e}", level="error")
+        log_message(f"Available audio devices: {_get_audio_devices()}", level="info")
         sys.exit(1)
 
     schedules = []
