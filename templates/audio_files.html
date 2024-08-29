@@ -11,10 +11,15 @@
     <h1>Manage Audio Files - {{ folder_name }}</h1>
     
     <form id="upload-form" method="post" enctype="multipart/form-data">
-        <input type="file" name="audio_file" accept=".wav">
+        <input type="file" name="audio_file" id="audio-file" accept="*.wav" required>
         <button type="submit">Upload</button>
     </form>
     
+    <div id="progress-container" style="display: none;">
+        <progress id="progress-bar" value="0" max="100"></progress>
+        <span id="progress-percentage">0%</span>
+    </div>
+
     <table id="audio-table">
         <thead>
             <tr>
@@ -56,6 +61,56 @@
                     $(this).closest('form').submit();
                 }
             });
+        });
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var fileInput = document.getElementById('audio-file');
+            var file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a file to upload.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('audio_file', file);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ url_for("upload_audio_file", folder_name=folder_name) }}', true);
+
+            // Update the progress bar
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    document.getElementById('progress-bar').value = percentComplete;
+                    document.getElementById('progress-percentage').innerText = Math.round(percentComplete) + '%';
+                }
+            };
+
+            // Show progress bar on upload start
+            xhr.onloadstart = function() {
+                document.getElementById('progress-container').style.display = 'block';
+            };
+
+            // Handle completion of the upload
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    alert('File uploaded successfully!');
+                    location.reload(); // Reload the page to update the file list
+                } else {
+                    alert('Error uploading file.');
+                }
+                document.getElementById('progress-container').style.display = 'none';
+            };
+
+            // Handle errors
+            xhr.onerror = function() {
+                alert('An error occurred during the upload.');
+                document.getElementById('progress-container').style.display = 'none';
+            };
+
+            xhr.send(formData);
         });
     </script>
 </body>

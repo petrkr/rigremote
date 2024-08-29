@@ -59,7 +59,7 @@ def edit_schedule(folder_name):
     return render_template('edit_schedule.html', folder_name=folder_name, data=df.to_dict(orient='records'))
 
 # Route to Manage Audio Files
-@app.route('/manage_audio/<folder_name>', methods=['GET', 'POST'])
+@app.route('/manage_audio/<folder_name>', methods=['GET'])
 def manage_audio(folder_name):
     base_dir = os.path.abspath(BASE_DIR)
 
@@ -84,6 +84,32 @@ def manage_audio(folder_name):
             return redirect(url_for('manage_audio', folder_name=folder_name))
 
     return render_template('audio_files.html', folder_name=folder_name, audio_files=audio_files)
+
+# Route to Upload Audio File
+@app.route('/upload_audio/<folder_name>', methods=['POST'])
+def upload_audio_file(folder_name):
+    if 'audio_file' not in request.files:
+        return "No file part", 400
+
+    base_dir = os.path.abspath(BASE_DIR)
+
+    # Securely join paths
+    safe_folder_path = os.path.abspath(os.path.join(base_dir, folder_name))
+
+
+    file = request.files['audio_file']
+    if file.filename == '':
+        return "No selected file", 400
+
+    if file.filename.endswith('.wav'):
+        safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file.filename))
+        if not safe_file_path.startswith(base_dir):
+            abort(403)
+
+        file.save(safe_file_path)
+        return '', 200
+
+    return "Invalid file", 400
 
 # Route to Delete Audio File
 @app.route('/delete_audio/<folder_name>/<file_name>', methods=['POST'])
