@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
+from glob import glob
 import os
 import pandas as pd
 
@@ -53,14 +54,26 @@ def edit_schedule(folder_name):
 # Route to Manage Audio Files
 @app.route('/manage_audio/<folder_name>', methods=['GET', 'POST'])
 def manage_audio(folder_name):
-    folder_path = os.path.join(BASE_DIR, folder_name)
-    audio_files = [f for f in os.listdir(folder_path) if f.endswith('.wav')]
+    base_dir = os.path.abspath(BASE_DIR)
+
+    # Securely join paths
+    safe_folder_path = os.path.abspath(os.path.join(base_dir, folder_name))
+
+    # Check if the paths are within the base directory
+    if not safe_folder_path.startswith(base_dir):
+        abort(403)  # Forbidden access
+
+    audio_files = glob("*.wav", root_dir=safe_folder_path)
 
     if request.method == 'POST':
         if 'audio_file' in request.files:
             file = request.files['audio_file']
             if file.filename.endswith('.wav'):
-                file.save(os.path.join(folder_path, file.filename))
+                safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file.filename))
+                if not safe_file_path.startswith(base_dir):
+                    abort(403)
+
+                file.save(safe_file_path)
             return redirect(url_for('manage_audio', folder_name=folder_name))
 
     return render_template('audio_files.html', folder_name=folder_name, audio_files=audio_files)
@@ -77,13 +90,22 @@ def delete_audio_file(folder_name, file_name):
 # Route to stream audio files
 @app.route('/stream_audio/<folder_name>/<file_name>')
 def stream_audio(folder_name, file_name):
-    folder_path = os.path.join(BASE_DIR, folder_name)
-    file_path = os.path.join(folder_path, file_name)
+    base_dir = os.path.abspath(BASE_DIR)
 
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=False)
+    # Securely join paths
+    safe_folder_path = os.path.abspath(os.path.join(base_dir, folder_name))
+    safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file_name))
+
+    # Check if the paths are within the base directory
+    if not safe_file_path.startswith(base_dir):
+        abort(403)  # Forbidden access
+
+    # Check if the file exists and is a file
+    if os.path.exists(safe_file_path) and os.path.isfile(safe_file_path):
+        return send_from_directory(directory=safe_folder_path, path=os.path.basename(safe_file_path), as_attachment=False)
     else:
         abort(404)  # File not found
+
 
 if __name__ == '__main__':
     app.run("::", debug=True)
