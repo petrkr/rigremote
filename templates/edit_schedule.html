@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Schedule - {{ folder_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+</head>
+<body>
+    <h1>Edit Schedule - {{ folder_name }}</h1>
+    <form method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Start Time</th>
+                    <th>Duration (minutes)</th>
+                    <th>Frequency (MHz)</th>
+                    <th>Mode</th>
+                    <th>Power (W)</th>
+                    <th>Pause (sec)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td><input type="text" name="Start Date" value="{{ row['Start Date'] }}" class="datepicker"></td>
+                    <td><input type="text" name="End Date" value="{{ row['End Date'] }}" class="datepicker"></td>
+                    <td><input type="text" name="Start Time" value="{{ row['Start Time'] }}"></td>
+                    <td><input type="number" name="Duration (minutes)" value="{{ row['Duration (minutes)'] }}"></td>
+                    <td><input type="number" step="0.1" name="Frequency (MHz)" value="{{ row['Frequency (MHz)'] }}"></td>
+                    <td>
+                        <select name="Mode">
+                            <option value="FM" {% if row['Mode'] == 'FM' %}selected{% endif %}>FM</option>
+                            <option value="USB" {% if row['Mode'] == 'USB' %}selected{% endif %}>USB</option>
+                            <option value="LSB" {% if row['Mode'] == 'LSB' %}selected{% endif %}>LSB</option>
+                            <option value="AM" {% if row['Mode'] == 'AM' %}selected{% endif %}>AM</option>
+                        </select>
+                    </td>
+                    <td><input type="number" name="Power (W)" value="{{ row['Power (W)'] }}"></td>
+                    <td><input type="number" name="Pause (sec)" value="{{ row['Pause (sec)'] }}"></td>
+                    <td>
+                        <button type="submit" name="delete_row" value="{{ loop.index0 }}" class="delete-button">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="form-actions">
+            <button type="submit" name="add_row">Add New Row</button>
+            <button type="submit">Save Changes</button>
+        </div>
+    </form>
+    <a href="{{ url_for('index') }}">Back to folder list</a>
+    <script>
+        $(document).ready(function() {
+            $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
+        });
+    </script>
+</body>
+</html>
