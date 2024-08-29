@@ -38,7 +38,14 @@ def create_folder():
 
 @app.route('/edit/<folder_name>', methods=['GET', 'POST'])
 def edit_schedule(folder_name):
-    csv_path = os.path.join(BASE_DIR, folder_name, 'schedule.csv')
+    base_dir = os.path.abspath(BASE_DIR)
+
+    # Securely join paths
+    csv_path = os.path.abspath(os.path.join(base_dir, folder_name, 'schedule.csv'))
+
+    # Check if the paths are within the base directory
+    if not csv_path.startswith(base_dir):
+        abort(403)  # Forbidden access
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=False)
@@ -81,10 +88,19 @@ def manage_audio(folder_name):
 # Route to Delete Audio File
 @app.route('/delete_audio/<folder_name>/<file_name>', methods=['POST'])
 def delete_audio_file(folder_name, file_name):
-    folder_path = os.path.join(BASE_DIR, folder_name)
-    file_path = os.path.join(folder_path, file_name)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    base_dir = os.path.abspath(BASE_DIR)
+
+    # Securely join paths
+    safe_folder_path = os.path.abspath(os.path.join(base_dir, folder_name))
+    safe_file_path = os.path.abspath(os.path.join(safe_folder_path, file_name))
+
+    # Check if the paths are within the base directory
+    if not safe_file_path.startswith(base_dir):
+        abort(403)  # Forbidden access
+
+    if os.path.exists(safe_file_path):
+        os.remove(safe_file_path)
+
     return redirect(url_for('manage_audio', folder_name=folder_name))
 
 # Route to stream audio files
