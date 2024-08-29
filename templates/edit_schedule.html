@@ -53,10 +53,11 @@
         </table>
         <div class="form-actions">
             <button type="button" id="add-row-button">Add New Row</button>
-            <button type="submit">Save Changes</button>
+            <button type="button" id="save-changes-button">Save Changes</button>
         </div>
     </form>
     <a href="{{ url_for('index') }}">Back to folder list</a>
+
     <script>
         $(document).ready(function() {
             $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
@@ -94,6 +95,26 @@
                 $(this).closest('tr').remove();
             });
 
+            // Save changes with AJAX
+            $("#save-changes-button").click(function() {
+                var button = $(this);
+                button.prop("disabled", true).css("background-color", "grey");
+
+                $.ajax({
+                    url: "{{ url_for('edit_schedule', folder_name=folder_name) }}",
+                    type: "POST",
+                    data: $("#schedule-form").serialize(),
+                    success: function(response) {
+                        alert('Schedule saved successfully!');
+                    },
+                    error: function() {
+                        alert('An error occurred while saving the schedule.');
+                    },
+                    complete: function() {
+                        button.prop("disabled", false).css("background-color", "");
+                    }
+                });
+            });
         });
     </script>
 </body>
