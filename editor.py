@@ -70,7 +70,10 @@ def manage_audio(folder_name):
     if not safe_folder_path.startswith(base_dir):
         abort(403)  # Forbidden access
 
-    audio_files = glob("*.wav", root_dir=safe_folder_path)
+    audio_files = []
+    for f in ("*.wav", "*.mp3"):
+        audio_files.extend(glob(f, root_dir=safe_folder_path))
+
     return render_template('audio_files.html', folder_name=folder_name, audio_files=audio_files)
 
 # Route to Upload Audio File

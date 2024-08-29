@@ -89,7 +89,11 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
         log_message("Signal power threshold not met. Transmission aborted.", level="error")
         return
 
-    for file in glob("*.wav", root_dir=set_folder):
+    files = []
+    for f in ("*.wav", "*.mp3"):
+        files.extend(glob(f, root_dir=set_folder))
+
+    for file in files:
         log_message(f"Transmitting {file}...")
         try:
             pygame.mixer.music.load(os.path.join(set_folder, file))
