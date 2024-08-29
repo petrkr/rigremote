@@ -3,7 +3,7 @@ Description=Hamlib Transmitter Service
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /opt/transmitter/transmitter.py
+ExecStart=/usr/bin/python3 -u /opt/transmitter/transmitter.py
 WorkingDirectory=/opt/transmitter
 Restart=always
 
