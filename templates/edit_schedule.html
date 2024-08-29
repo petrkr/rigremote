@@ -36,9 +36,9 @@
                     <td><input type="number" step="0.001" name="Frequency (MHz)" value="{{ row['Frequency (MHz)'] }}"></td>
                     <td>
                         <select name="Mode">
-                            <option value="FM" {% if row['Mode'] == 'FM' %}selected{% endif %}>FM</option>
                             <option value="USB" {% if row['Mode'] == 'USB' %}selected{% endif %}>USB</option>
                             <option value="LSB" {% if row['Mode'] == 'LSB' %}selected{% endif %}>LSB</option>
+                            <option value="FM" {% if row['Mode'] == 'FM' %}selected{% endif %}>FM</option>
                             <option value="AM" {% if row['Mode'] == 'AM' %}selected{% endif %}>AM</option>
                         </select>
                     </td>
@@ -72,9 +72,9 @@
                         <td><input type="number" step="0.001" name="Frequency (MHz)" value=""></td>
                         <td>
                             <select name="Mode">
-                                <option value="FM">FM</option>
                                 <option value="USB">USB</option>
                                 <option value="LSB">LSB</option>
+                                <option value="FM">FM</option>
                                 <option value="AM">AM</option>
                             </select>
                         </td>
