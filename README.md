@@ -13,7 +13,7 @@ Proof of concept scripts for remote control TX SSTV images by using FT-991A TRX,
 Raspbian Pi OS 11 or 12
 
 ### For transmitter
-`apt install python3-yaml python3-hamlib libhamlib-utils`
+`apt install python3-pygame python3-yaml python3-hamlib libhamlib-utils`
 
 ### For editor
 `apt install python3-flask gunicorn python3-pandas`
