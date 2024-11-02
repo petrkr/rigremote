@@ -81,8 +81,8 @@ def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
 def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal_power_threshold, max_waiting_time):
     log_message(f"Starting transmission of {set_folder} on {frequency} MHz, Power: {power} W")
 
-    rig.set_freq(Hamlib.RIG_VFO_CURR, frequency * 1e6)
     rig.set_mode(mode)
+    rig.set_freq(Hamlib.RIG_VFO_CURR, frequency * 1e6)
     rig.set_level(Hamlib.RIG_LEVEL_RFPOWER, power / 100)
 
     log_message(f"Checking signal power before transmission")
