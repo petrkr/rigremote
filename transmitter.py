@@ -93,7 +93,7 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
 
     files = []
     for f in ("*.wav", "*.mp3"):
-        files.extend(glob(f, root_dir=set_folder))
+        files.extend(sorted(glob(f, root_dir=set_folder)))
 
     for file in files:
         log_message(f"Transmitting {file}...")
