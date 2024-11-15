@@ -123,7 +123,16 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
 
         log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
         rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_OFF)
-        time.sleep(pause)
+
+        for _ in range(pause):
+            if not running:
+                break
+
+            time.sleep(1)
+
+        if not running:
+                log_message(f"Transmission of {set_folder} interrupted by user.")
+                break
 
     log_message(f"Finished transmission of {set_folder}")
 
