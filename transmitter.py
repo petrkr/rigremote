@@ -70,6 +70,7 @@ def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
     start_time = time.time()
     while running:
         signal_power = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH)
+        log_message(f"Signal power: {signal_power}")
         if signal_power < threshold:
             return True
         if time.time() - start_time > max_waiting_time:
@@ -77,6 +78,7 @@ def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
             return True
         time.sleep(10)
     return False
+
 
 def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal_power_threshold, max_waiting_time):
     log_message(f"Starting transmission of {set_folder} on {frequency} MHz, Power: {power} W")
@@ -144,10 +146,12 @@ def check_for_overlaps(schedule):
             return True
     return False
 
+
 def handle_shutdown(signum, frame):
     global running
     log_message("Received shutdown signal, stopping service...", level="warning")
     running = False
+
 
 def parse_mode(mode):
     if mode == "USB":
@@ -295,7 +299,8 @@ def main():
             set_folder = row['set_folder']
             start_time = row['start_datetime'].time()
             if now.time() >= start_time and now.time() <= (datetime.combine(datetime.today(), start_time) + timedelta(minutes=int(row['duration']))).time():
-                log_message(f"Transmitting set {set_folder} at {now}...")
+                log_message(f"Actual schedule:")
+                print_schedules([row])
                 transmit(
                     rig=rig,
                     set_folder=set_folder,
