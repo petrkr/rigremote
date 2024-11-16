@@ -306,9 +306,14 @@ def main():
 
         for row in schedules:
             set_folder = row['set_folder']
-            start_time = row['start_datetime'].time()
-            if now.time() >= start_time and now.time() <= (datetime.combine(datetime.today(), start_time) + timedelta(minutes=int(row['duration']))).time():
-                log_message(f"Actual schedule:")
+            start_datetime = row['start_datetime']
+
+            if now.date() is not start_datetime.date():
+                log_message("This schedule is not active at the moment: " + str(row['start_datetime']))
+                continue
+
+            if now.time() >= start_datetime.time() and now.time() <= (datetime.combine(datetime.today(), start_datetime.time()) + timedelta(minutes=int(row['duration']))).time():
+                log_message("Actual schedule:")
                 print_schedules([row])
                 transmit(
                     rig=rig,
@@ -321,10 +326,10 @@ def main():
                     max_waiting_time=global_settings['max_waiting_time']
                 )
             else:
-                log_message(f"This schedule is not active at the moment. Time: "+ str(row['start_datetime']))
+                log_message("This schedule is not active at the moment. Time: " + str(row['start_datetime']))
 
             if not running:
-                log_message(f"Interrupted by user.")
+                log_message("Interrupted by user.")
                 break
 
         log_message(f"Waiting {global_settings['check_interval']} seconds for next loop...")
