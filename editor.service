@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/opt/rigremote
-ExecStart=/usr/bin/gunicorn --workers 3 --bind [::]:80 editor:app
+ExecStart=/usr/bin/gunicorn --timeout 300 --workers 3 --bind [::]:80 editor:app
 
 [Install]
 WantedBy=multi-user.target
