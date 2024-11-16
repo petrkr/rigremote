@@ -308,7 +308,7 @@ def main():
             set_folder = row['set_folder']
             start_datetime = row['start_datetime']
 
-            if now.date() is not start_datetime.date():
+            if now.date() != start_datetime.date():
                 log_message("This schedule is not active at the moment: " + str(row['start_datetime']))
                 continue
 
