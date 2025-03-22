@@ -1,0 +1,24 @@
+import random
+
+class FakeRadio:
+    def __init__(self, id):
+        self.id = id
+        self.freq = 145500000
+        self.ptt = False
+
+    def get_freq(self):
+        return self.freq
+
+    def get_ptt(self):
+        return self.ptt
+
+    def get_signal_strength(self):
+        import random
+        return random.randint(0, 9)
+
+    def toggle_ptt(self):
+        self.ptt = not self.ptt
+        return self.ptt
+
+    def set_ptt(self, value):
+        self.ptt = value

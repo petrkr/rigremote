@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Radio Control Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='remote/css/style.css') }}">
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="statusBar">
+        <span id="statusRadio">Radio: --</span>
+        <span id="statusConn">Status: Offline</span>
+    </div>
+
+    <div class="content">
+        <label for="radioSelect">Select Radio:</label>
+        <select id="radioSelect" onchange="selectRadio()">
+            <option disabled selected>-- choose --</option>
+        </select>
+
+        <hr>
+
+        <p>Frequency: <span id="freq">--</span> Hz</p>
+        <p>PTT Status: <span id="ptt">--</span></p>
+        <p>Signal Strength (S): <span id="signal">--</span></p>
+
+        <button id="pttPushBtn">Push to Talk</button>
+        <button id="pttToggleBtn" onclick="togglePTT()">Toggle PTT</button>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='remote/js/app.js') }}"></script>    
+</body>
+</html>
