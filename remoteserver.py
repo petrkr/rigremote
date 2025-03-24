@@ -63,7 +63,17 @@ def handle_select_radio(data):
     if radio_id in radios:
         clients[sid] = radio_id
         print(f"Client {sid} is now watching radio {radio_id}")
+
         socketio.emit('radio_selected', {'id': radio_id}, to=sid)
+
+        state = {
+            'id': radio_id,
+            'freq': radios[radio_id].get_freq(),
+            'ptt': radios[radio_id].get_ptt(),
+            'signal': radios[radio_id].get_signal_strength()
+        }
+        socketio.emit('radio_status', state, to=sid)
+
 
 
 @socketio.on('toggle_ptt')
