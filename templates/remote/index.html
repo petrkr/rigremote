@@ -21,7 +21,15 @@
         <p>Mode: <span id="modeValue">--</span> (<span id="bandwidthValue">--</span>)</p>
         <p>Frequency: <span id="freq">--</span></p>
         <p>PTT Status: <span id="ptt">--</span></p>
-        <p>Signal Strength (S): <span id="signal">--</span></p>
+        <p>Signal Strength:</p>
+        <div class="s-meter">
+            <div class="s-meter-bar-mask" id="sMeterMask"></div>
+            <div class="s-meter-bar-cover" id="sMeterCover"></div>
+        </div>
+
+        <h3>Subtones</h3>
+        <p>CTCSS: <span id="ctcssValue">--</span></p>
+        <p>DCS: <span id="dcsValue">--</span></p>
 
         <button id="pttPushBtn">Push to Talk</button>
         <button id="pttToggleBtn" onclick="togglePTT()">Toggle PTT</button>
