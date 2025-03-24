@@ -74,3 +74,49 @@ hr {
 button:hover {
     filter: brightness(1.1);
 }
+
+.s-meter {
+    width: 100%;
+    max-width: 400px;
+    height: 20px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.s-meter {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 20px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background: #222;
+}
+
+.s-meter-bar-mask {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(to right,
+        #cc0000 0%,
+        #ff9900 25%,
+        #00cc00 50%,
+        #ff3333 100%
+    );
+    position: relative;
+    z-index: 1;
+}
+
+.s-meter-bar-cover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    background-color: #222;
+    transition: width 0.3s ease;
+    z-index: 2;
+}

@@ -35,7 +35,7 @@ socket.on('radio_status', function(data) {
     if (data.id !== selectedRadio) return;
     document.getElementById('freq').innerText = data.freq;
     document.getElementById('ptt').innerText = data.ptt ? 'ON' : 'OFF';
-    document.getElementById('signal').innerText = data.signal;
+    updateSignalMeter(data.signal);
     updatePTTVisual(data.ptt);
 });
 
@@ -82,4 +82,13 @@ function togglePTT() {
     if (selectedRadio) {
         socket.emit('toggle_ptt');
     }
+}
+
+function updateSignalMeter(value) {
+    const cover = document.getElementById('sMeterCover');
+
+    const clamped = Math.max(-60, Math.min(60, value));
+    const percent = 100 - ((clamped + 60) / 120) * 100;
+
+    cover.style.width = percent + "%";  // překrytí zprava
 }
