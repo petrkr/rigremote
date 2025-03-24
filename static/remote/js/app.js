@@ -37,6 +37,22 @@ socket.on('radio_status', function(data) {
     document.getElementById('ptt').innerText = data.ptt ? 'ON' : 'OFF';
     updateSignalMeter(data.signal);
     updatePTTVisual(data.ptt);
+
+    // CTCSS
+    if ('ctcss' in data && data.ctcss > 0) {
+        const ctcssHz = (data.ctcss / 10).toFixed(1);
+        document.getElementById('ctcssValue').innerText = `${ctcssHz} Hz`;
+    } else {
+        document.getElementById('ctcssValue').innerText = "Off";
+    }
+
+    // DCS
+    if ('dcs' in data && data.dcs > 0) {
+        const code = data.dcs.toString().padStart(3, '0');
+        document.getElementById('dcsValue').innerText = `D${code}`;
+    } else {
+        document.getElementById('dcsValue').innerText = "Off";
+    }
 });
 
 socket.on('ptt_toggled', function(data) {
