@@ -12,7 +12,7 @@ BASE_DIR = '/mnt/data/sstv'
 @app.route('/')
 def index():
     folders = [f for f in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR, f))]
-    return render_template('index.html', folders=folders)
+    return render_template('editor/index.html', folders=folders)
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_folder():
@@ -34,7 +34,7 @@ def create_folder():
 
         return redirect(url_for('index'))
 
-    return render_template('create_folder.html')
+    return render_template('editor/create_folder.html')
 
 @app.route('/edit/<folder_name>', methods=['GET', 'POST'])
 def edit_schedule(folder_name):
@@ -56,7 +56,7 @@ def edit_schedule(folder_name):
         return redirect(url_for('index'))
 
     df = pd.read_csv(csv_path, sep=';')
-    return render_template('edit_schedule.html', folder_name=folder_name, data=df.to_dict(orient='records'))
+    return render_template('editor/edit_schedule.html', folder_name=folder_name, data=df.to_dict(orient='records'))
 
 # Route to Manage Audio Files
 @app.route('/manage_audio/<folder_name>', methods=['GET'])
@@ -74,7 +74,7 @@ def manage_audio(folder_name):
     for f in ("*.wav", "*.mp3"):
         audio_files.extend(sorted(glob(f, root_dir=safe_folder_path)))
 
-    return render_template('audio_files.html', folder_name=folder_name, audio_files=audio_files)
+    return render_template('editor/audio_files.html', folder_name=folder_name, audio_files=audio_files)
 
 # Route to Upload Audio File
 @app.route('/upload_audio/<folder_name>', methods=['POST'])
