@@ -1,8 +1,7 @@
 import random
 
 class FakeRadio:
-    def __init__(self, id):
-        self.id = id
+    def __init__(self):
         self.freq = 145500000
         self.ptt = False
 

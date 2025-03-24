@@ -12,9 +12,7 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 socketio = SocketIO(app)
 
 radios = {
-    "R1": FakeRadio("R1"),
-    "R2": FakeRadio("R2"),
-    "R3": FakeRadio("R3"),
+    "FakeRadio": FakeRadio()
 }
 
 clients = {}
@@ -27,13 +25,13 @@ def start_radio_monitor(radio_id, radio):
         nonlocal prev_state
         while True:
             state = {
-                'id': radio.id,
+                'id': radio_id,
                 'freq': radio.get_freq(),
                 'ptt': radio.get_ptt(),
                 'signal': radio.get_signal_strength()
             }
             if state != prev_state:
-                # Poslat všem klientům, kteří sledují právě toto rádio
+
                 for sid, r_id in clients.items():
                     if r_id == radio_id:
                         socketio.emit('radio_status', state, to=sid)

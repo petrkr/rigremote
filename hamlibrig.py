@@ -1,8 +1,7 @@
 import Hamlib
 
 class HamlibNetRig:
-    def __init__(self, id, host):
-        self.id = id
+    def __init__(self, host):
         self._rig = self._initialize_rig(host)
         self.ptt = False
 
