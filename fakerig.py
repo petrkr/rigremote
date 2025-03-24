@@ -5,6 +5,15 @@ class FakeRadio:
         self.freq = 145500000
         self.ptt = False
 
+
+    def get_ctcss_tone(self):
+        return 887
+
+
+    def get_dcs_code(self):
+        return 25
+
+
     def get_freq(self):
         return self.freq
 

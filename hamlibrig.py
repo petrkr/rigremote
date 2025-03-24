@@ -6,6 +6,14 @@ class HamlibNetRig:
         self.ptt = False
 
 
+    def get_ctcss_tone(self):
+        return self._rig.get_ctcss_tone()
+
+
+    def get_dcs_code(self):
+        return self._rig.get_dcs_code()
+
+
     def get_freq(self):
         return self._rig.get_freq()
 

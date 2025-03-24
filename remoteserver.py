@@ -28,7 +28,9 @@ def start_radio_monitor(radio_id, radio):
                 'id': radio_id,
                 'freq': radio.get_freq(),
                 'ptt': radio.get_ptt(),
-                'signal': radio.get_signal_strength()
+                'signal': radio.get_signal_strength(),
+                'ctcss': radio.get_ctcss_tone(),
+                'dcs': radio.get_dcs_code()
             }
             if state != prev_state:
 
@@ -68,7 +70,9 @@ def handle_select_radio(data):
             'id': radio_id,
             'freq': radios[radio_id].get_freq(),
             'ptt': radios[radio_id].get_ptt(),
-            'signal': radios[radio_id].get_signal_strength()
+            'signal': radios[radio_id].get_signal_strength(),
+            'ctcss': radios[radio_id].get_ctcss_tone(),
+            'dcs': radios[radio_id].get_dcs_code()
         }
         socketio.emit('radio_status', state, to=sid)
 
