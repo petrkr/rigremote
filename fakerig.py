@@ -17,6 +17,11 @@ class FakeRadio:
     def get_freq(self):
         return self.freq
 
+
+    def get_mode(self):
+        return ("FM", 25000)
+
+
     def get_ptt(self):
         return self.ptt
 

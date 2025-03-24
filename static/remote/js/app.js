@@ -38,6 +38,21 @@ socket.on('radio_status', function(data) {
     updateSignalMeter(data.signal);
     updatePTTVisual(data.ptt);
 
+    // Mode
+    if ('mode' in data && data.mode) {
+        document.getElementById('modeValue').innerText = data.mode;
+    } else {
+        document.getElementById('modeValue').innerText = '--';
+    }
+
+    // Bandwidth
+    if ('bandwidth' in data && data.bandwidth > 0) {
+        const bwKHz = (data.bandwidth / 1000).toFixed(1);
+        document.getElementById('bandwidthValue').innerText = `${bwKHz} kHz`;
+    } else {
+        document.getElementById('bandwidthValue').innerText = '--';
+    }
+
     // CTCSS
     if ('ctcss' in data && data.ctcss > 0) {
         const ctcssHz = (data.ctcss / 10).toFixed(1);

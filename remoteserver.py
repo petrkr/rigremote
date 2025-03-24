@@ -24,11 +24,15 @@ def start_radio_monitor(radio_id, radio):
     def monitor():
         nonlocal prev_state
         while True:
+            mode_str, bandwidth = radio.get_mode()
+
             state = {
                 'id': radio_id,
                 'freq': radio.get_freq(),
                 'ptt': radio.get_ptt(),
                 'signal': radio.get_signal_strength(),
+                'mode': mode_str,
+                'bandwidth': bandwidth,
                 'ctcss': radio.get_ctcss_tone(),
                 'dcs': radio.get_dcs_code()
             }
@@ -66,11 +70,15 @@ def handle_select_radio(data):
 
         socketio.emit('radio_selected', {'id': radio_id}, to=sid)
 
+        mode_str, bandwidth = radios[radio_id].get_mode()
+
         state = {
             'id': radio_id,
             'freq': radios[radio_id].get_freq(),
             'ptt': radios[radio_id].get_ptt(),
             'signal': radios[radio_id].get_signal_strength(),
+            'mode': mode_str,
+            'bandwidth': bandwidth,
             'ctcss': radios[radio_id].get_ctcss_tone(),
             'dcs': radios[radio_id].get_dcs_code()
         }

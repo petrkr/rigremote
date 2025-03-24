@@ -1,5 +1,17 @@
 import Hamlib
 
+HAMLIB_MODE_MAP = {
+    Hamlib.RIG_MODE_USB: "USB",
+    Hamlib.RIG_MODE_LSB: "LSB",
+    Hamlib.RIG_MODE_CW: "CW",
+    Hamlib.RIG_MODE_CWR: "CWR",
+    Hamlib.RIG_MODE_AM: "AM",
+    Hamlib.RIG_MODE_FM: "FM",
+    Hamlib.RIG_MODE_WFM: "WFM",
+    Hamlib.RIG_MODE_RTTY: "RTTY"
+}
+
+
 class HamlibNetRig:
     def __init__(self, host):
         self._rig = self._initialize_rig(host)
@@ -16,6 +28,12 @@ class HamlibNetRig:
 
     def get_freq(self):
         return self._rig.get_freq()
+
+
+    def get_mode(self):
+        mode_code, bandwidth = self._rig.get_mode()
+        mode_str = HAMLIB_MODE_MAP.get(mode_code, f"Unknown({mode_code})")
+        return (mode_str, bandwidth)
 
 
     def get_ptt(self):
