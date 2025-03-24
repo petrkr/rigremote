@@ -33,7 +33,16 @@ socket.on('radio_selected', function(data) {
 
 socket.on('radio_status', function(data) {
     if (data.id !== selectedRadio) return;
-    document.getElementById('freq').innerText = data.freq;
+
+    if ('freq' in data && data.freq > 0) {
+        const freqKHz = (data.freq / 1000).toFixed(1);
+        const parts = freqKHz.split('.');
+        const formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + '.' + parts[1];
+        document.getElementById('freq').innerText = `${formatted} kHz`;
+    } else {
+        document.getElementById('freq').innerText = '--';
+    }
+
     document.getElementById('ptt').innerText = data.ptt ? 'ON' : 'OFF';
     updateSignalMeter(data.signal);
     updatePTTVisual(data.ptt);
