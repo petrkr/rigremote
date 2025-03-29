@@ -3,7 +3,9 @@ eventlet.monkey_patch()
 
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, join_room, rooms
-from fakerig import FakeRadio
+
+from radio_loader import load_radios_from_config
+
 import threading
 import time
 
@@ -23,9 +25,8 @@ app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 socketio = SocketIO(app)
 
-radios = {
-    "FakeRadio": FakeRadio()
-}
+radios = load_radios_from_config("remoteserver.yaml")
+
 
 clients = {}
 prev_state = {}

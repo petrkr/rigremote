@@ -1,0 +1,7 @@
+radios:
+  - id: FT991
+    type: hamlibnet
+    host: 127.0.0.1
+
+  - id: Demo1
+    type: fake
