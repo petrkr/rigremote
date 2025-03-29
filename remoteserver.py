@@ -8,6 +8,7 @@ from radio_loader import load_radios_from_config
 
 import threading
 import time
+import os
 
 import opuslib
 import pyaudio
@@ -20,6 +21,10 @@ opus_decoder = opuslib.Decoder(SAMPLE_RATE, 1)
 
 pya = pyaudio.PyAudio()
 audio_out = pya.open(format=pyaudio.paInt16, channels=1, rate=SAMPLE_RATE, output=True)
+
+USE_SSL = os.environ.get("USE_SSL", "false").lower() == "true"
+CERT_FILE = os.environ.get("SSL_CERT", "certs/cert.pem")
+KEY_FILE = os.environ.get("SSL_KEY", "certs/key.pem")
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -160,4 +165,5 @@ if __name__ == '__main__':
     for radio_id, radio in radios.items():
         start_radio_monitor(radio_id, radio)
 
-    socketio.run(app, host='0.0.0.0', port=5000)
+    ssl_context = (CERT_FILE, KEY_FILE) if USE_SSL else None
+    socketio.run(app, host="0.0.0.0", port=5000, ssl_context=ssl_context)
