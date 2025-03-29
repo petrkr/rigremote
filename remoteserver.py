@@ -7,6 +7,18 @@ from fakerig import FakeRadio
 import threading
 import time
 
+import opuslib
+import pyaudio
+
+SAMPLE_RATE = 16000
+CHUNK_MS = 20
+FRAME_SIZE = SAMPLE_RATE * CHUNK_MS // 1000
+
+opus_decoder = opuslib.Decoder(SAMPLE_RATE, 1)
+
+pya = pyaudio.PyAudio()
+audio_out = pya.open(format=pyaudio.paInt16, channels=1, rate=SAMPLE_RATE, output=True)
+
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 socketio = SocketIO(app)
@@ -83,6 +95,20 @@ def handle_select_radio(data):
             'dcs': radios[radio_id].get_dcs_code()
         }
         socketio.emit('radio_status', state, to=sid)
+
+
+@socketio.on('audio_chunk')
+def handle_audio_chunk(data):
+    try:
+        decoded = opus_decoder.decode(data, FRAME_SIZE)
+        audio_out.write(decoded)
+    except Exception as e:
+        print(f"[AUDIO] Decode error: {e}")
+
+
+@socketio.on('audio_pcm')
+def handle_audio_pcm(data):
+    audio_out.write(data)
 
 
 

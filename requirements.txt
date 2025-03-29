@@ -1,3 +1,6 @@
 flask
 flask_socketio
 eventlet
+
+opuslib
+pyaudio

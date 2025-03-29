@@ -1,4 +1,5 @@
 let selectedRadio = null;
+let isTransmitting = false;
 
 const socket = io();
 
@@ -87,18 +88,30 @@ socket.on('ptt_toggled', function(data) {
 
 const pttBtn = document.getElementById('pttPushBtn');
 pttBtn.addEventListener('mousedown', () => {
-    if (selectedRadio) socket.emit('ptt_on');
+    if (selectedRadio) {
+        socket.emit('ptt_on');
+        startTXAudio();
+    }
 });
 pttBtn.addEventListener('mouseup', () => {
-    if (selectedRadio) socket.emit('ptt_off');
+    if (selectedRadio) {
+        socket.emit('ptt_off');
+        stopTXAudio();
+    }
 });
 pttBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    if (selectedRadio) socket.emit('ptt_on');
+    if (selectedRadio) {
+        socket.emit('ptt_on');
+        startTXAudio();
+    }
 });
 pttBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
-    if (selectedRadio) socket.emit('ptt_off');
+    if (selectedRadio) {
+        socket.emit('ptt_off');
+        stopTXAudio();
+    }
 });
 
 function updatePTTVisual(isOn) {
@@ -121,6 +134,14 @@ function updatePTTVisual(isOn) {
 function togglePTT() {
     if (selectedRadio) {
         socket.emit('toggle_ptt');
+
+        if (isTransmitting) {
+            stopTXAudio();
+            isTransmitting = false;
+        } else {
+            startTXAudio();
+            isTransmitting = true;
+        }
     }
 }
 
@@ -131,4 +152,40 @@ function updateSignalMeter(value) {
     const percent = 100 - ((clamped + 60) / 120) * 100;
 
     cover.style.width = percent + "%";  // překrytí zprava
+}
+
+let audioContext;
+let processor;
+let input;
+
+function startTXAudio() {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        input = audioContext.createMediaStreamSource(stream);
+
+        processor = audioContext.createScriptProcessor(2048, 1, 1);
+        input.connect(processor);
+        processor.connect(audioContext.destination);
+
+        processor.onaudioprocess = function (e) {
+            const floatData = e.inputBuffer.getChannelData(0); // Float32Array
+            const int16 = new Int16Array(floatData.length);
+
+            for (let i = 0; i < floatData.length; i++) {
+                int16[i] = Math.max(-1, Math.min(1, floatData[i])) * 32767;
+            }
+
+            socket.emit('audio_pcm', int16.buffer);
+        };
+    });
+}
+
+function stopTXAudio() {
+    if (processor) processor.disconnect();
+    if (input) input.disconnect();
+    if (audioContext) audioContext.close();
+
+    processor = null;
+    input = null;
+    audioContext = null;
 }
