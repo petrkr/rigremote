@@ -34,4 +34,5 @@ class FakeRadio:
         return self.ptt
 
     def set_ptt(self, value):
+        print(f"FakeRig: PTT: {value}")
         self.ptt = value
