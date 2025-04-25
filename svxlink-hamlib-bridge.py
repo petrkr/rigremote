@@ -72,6 +72,7 @@ def start_radio_monitor(radio_id, radio, ptt, sql_pty = None):
                             radio.set_ptt(False)
             except Exception as e:
                 print(f"[{radio_id}] Error: {e}")
+                radio.set_ptt(False)
                 time.sleep(1)
 
     if sql_pty:
