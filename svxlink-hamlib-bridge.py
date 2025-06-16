@@ -83,8 +83,9 @@ def start_radio_monitor(radio_id, radio, ptt, sql_pty = None):
 
 
 if __name__ == '__main__':
-    start_radio_monitor("FT991", HamlibNetRig("127.0.0.1"), None, "/tmp/svxlink_tx1_sql")
-    start_radio_monitor("FT991", FakeRadio(), "/tmp/svxlink_tx1_ptt", None)
+    start_radio_monitor("FT991", HamlibNetRig("127.0.0.1"), "/tmp/svxlink_tx1_ptt", "/tmp/svxlink_tx1_sql")
+#    start_radio_monitor("FT991", HamlibNetRig("127.0.0.1"), None, "/tmp/svxlink_tx1_sql")
+#    start_radio_monitor("FT991", FakeRadio(), "/tmp/svxlink_tx1_ptt", None)
     try:
         while True:
             time.sleep(1)
