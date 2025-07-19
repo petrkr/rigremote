@@ -4,7 +4,7 @@ import time
 from hamlibrig import HamlibNetRig
 from fakerig import FakeRadio
 
-fifo_path = "/tmp/svxlink_echolink_bot"
+fifo_path = "/tmp/svxlink_echolink_chat"
 msg_path = "/tmp/svxlink_echolink_ctrl"
 
 def parseEcholinkmsg(msg):
@@ -40,6 +40,7 @@ def main():
                     print(f"{call}: {msg}")
 
                     if msg == "f":
+                        print("Sending frequency")
                         sendEcholinkMsg(call, f"Frequency: {rig.get_freq()}")
 
     except KeyboardInterrupt:
