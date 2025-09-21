@@ -274,7 +274,6 @@ def list_plugin_configs():
                 "key": plugin_instance.key,
                 "label": plugin_instance.label,
                 "enabled": plugin_key in config.plugins.enabled_plugins,
-                "running": plugin_instance.running,
                 "external_service": plugin_instance.is_external_service(),
                 "has_web_interface": plugin_instance.has_web_interface(),
                 "web_routes": plugin_instance.get_web_routes(),
@@ -290,7 +289,6 @@ def list_plugin_configs():
                     "key": temp_instance.key,
                     "label": temp_instance.label,
                     "enabled": plugin_key in config.plugins.enabled_plugins,
-                    "running": False,
                     "external_service": temp_instance.is_external_service(),
                     "has_web_interface": temp_instance.has_web_interface(),
                     "web_routes": temp_instance.get_web_routes(),
@@ -321,11 +319,12 @@ def enable_plugin(plugin_key: str):
     try:
         _save_configuration(config_manager)
         
-        # Create plugin instance if not exists
-        if not registry.get_plugin(plugin_key):
+        plugin = registry.get_plugin(plugin_key)
+        if not plugin:
             plugin = registry.create_plugin(plugin_key)
             if not plugin:
                 return jsonify({"error": "Failed to create plugin instance"}), 500
+        plugin.enable()
         
         return jsonify({"success": True})
         
@@ -350,10 +349,9 @@ def disable_plugin(plugin_key: str):
     try:
         _save_configuration(config_manager)
         
-        # Stop and remove plugin instance
         plugin = registry.get_plugin(plugin_key)
         if plugin:
-            plugin.stop()
+            plugin.disable()
             del registry.plugin_instances[plugin_key]
         
         return jsonify({"success": True})

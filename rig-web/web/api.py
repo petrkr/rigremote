@@ -179,19 +179,18 @@ def list_plugins():
             plugins.append({
                 "key": plugin.key,
                 "label": plugin.label,
-                "running": plugin.running,
+                "enabled": plugin.enabled,
                 "external_service": plugin.is_external_service(),
                 "service_name": plugin.external_service_name()
             })
         else:
-            # Plugin class exists but not instantiated
             plugin_class = registry.plugin_classes.get(plugin_key)
             if plugin_class:
                 temp_instance = plugin_class(registry)
                 plugins.append({
                     "key": temp_instance.key,
                     "label": temp_instance.label,
-                    "running": False,
+                    "enabled": False,
                     "external_service": temp_instance.is_external_service(),
                     "service_name": temp_instance.external_service_name()
                 })
@@ -222,43 +221,6 @@ def get_plugin_cards():
     return jsonify({"cards": cards})
 
 
-@api_bp.route('/plugins/<plugin_key>/start', methods=['POST'])
-def start_plugin(plugin_key: str):
-    """Start a plugin."""
-    registry = get_registry()
-    
-    # Create plugin if not exists
-    plugin = registry.get_plugin(plugin_key)
-    if not plugin:
-        plugin = registry.create_plugin(plugin_key)
-        if not plugin:
-            return jsonify({"error": "Plugin not found"}), 404
-    
-    try:
-        plugin.start()
-        return jsonify({"success": True, "running": plugin.running})
-    except Exception as e:
-        logger.error(f"Error starting plugin {plugin_key}: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
-@api_bp.route('/plugins/<plugin_key>/stop', methods=['POST'])
-def stop_plugin(plugin_key: str):
-    """Stop a plugin."""
-    registry = get_registry()
-    plugin = registry.get_plugin(plugin_key)
-    
-    if not plugin:
-        return jsonify({"error": "Plugin not found"}), 404
-    
-    try:
-        plugin.stop()
-        return jsonify({"success": True, "running": plugin.running})
-    except Exception as e:
-        logger.error(f"Error stopping plugin {plugin_key}: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
 @api_bp.route('/plugins/<plugin_key>/status', methods=['GET'])
 def get_plugin_status(plugin_key: str):
     """Get plugin status (including systemd service status if external)."""
@@ -277,7 +239,7 @@ def get_plugin_status(plugin_key: str):
     result = {
         "key": plugin.key,
         "label": plugin.label,
-        "running": plugin.running,
+        "enabled": plugin.enabled,
         "external_service": plugin.is_external_service()
     }
     

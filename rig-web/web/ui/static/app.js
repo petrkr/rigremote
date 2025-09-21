@@ -357,17 +357,17 @@ class RigWebClient {
     updateFeatureCardsDisplay(cards) {
         const container = document.getElementById('features-grid');
         container.innerHTML = '';
-        
+
         cards.forEach(card => {
             const cardElement = this.createFeatureCard(card);
             container.appendChild(cardElement);
         });
-        
+
         if (cards.length === 0) {
             container.innerHTML = '<p style="color: #7f8c8d; text-align: center; grid-column: 1 / -1;">No features available</p>';
         }
     }
-    
+
     createFeatureCard(card) {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'feature-card';
@@ -381,14 +381,11 @@ class RigWebClient {
             <div class="feature-card-description">
                 ${card.description}
             </div>
-            <div class="feature-card-footer">
-                <span class="feature-card-status ${card.status}">${card.status}</span>
-                <div class="feature-card-actions">
-                    ${card.settings_url ? `<a href="${card.settings_url}" class="btn-small" onclick="event.stopPropagation()">⚙️ Settings</a>` : ''}
-                </div>
+            <div class="feature-card-actions">
+                ${card.settings_url ? `<a href="${card.settings_url}" class="btn-small" onclick="event.stopPropagation()">⚙️ Settings</a>` : ''}
             </div>
         `;
-        
+
         return cardDiv;
     }
     
@@ -428,36 +425,12 @@ class RigWebClient {
         
         card.innerHTML = `
             <h4>${plugin.label}</h4>
-            <div class="plugin-status ${plugin.running ? 'running' : 'stopped'}">
-                ${plugin.running ? 'Running' : 'Stopped'}
-            </div>
-            <div class="plugin-controls">
-                <button class="start" onclick="rigClient.startPlugin('${plugin.key}')">Start</button>
-                <button class="stop" onclick="rigClient.stopPlugin('${plugin.key}')">Stop</button>
+            <div class="plugin-status ${plugin.enabled ? 'running' : 'stopped'}">
+                ${plugin.enabled ? 'Enabled' : 'Disabled'}
             </div>
         `;
         
         return card;
-    }
-    
-    async startPlugin(key) {
-        try {
-            await this.apiCall(`/plugins/${key}/start`, 'POST');
-            this.log(`Started plugin: ${key}`, 'success');
-            await this.loadPlugins();
-        } catch (error) {
-            this.log(`Failed to start plugin: ${key}`, 'error');
-        }
-    }
-    
-    async stopPlugin(key) {
-        try {
-            await this.apiCall(`/plugins/${key}/stop`, 'POST');
-            this.log(`Stopped plugin: ${key}`, 'success');
-            await this.loadPlugins();
-        } catch (error) {
-            this.log(`Failed to stop plugin: ${key}`, 'error');
-        }
     }
     
     // UI Management
@@ -584,19 +557,12 @@ class RigWebClient {
                 <div class="config-status ${plugin.enabled ? 'enabled' : 'disabled'}">
                     ${plugin.enabled ? 'Enabled' : 'Disabled'}
                 </div>
-                <p><strong>Running:</strong> ${plugin.running ? 'Yes' : 'No'}</p>
                 <p><strong>External Service:</strong> ${plugin.external_service ? 'Yes' : 'No'}</p>
                 <div class="config-controls">
                     <button class="btn ${plugin.enabled ? 'btn-secondary' : 'btn-success'}" 
                             onclick="rigClient.togglePlugin('${plugin.key}', ${!plugin.enabled})">
                         ${plugin.enabled ? 'Disable' : 'Enable'}
                     </button>
-                    ${plugin.enabled ? `
-                        <button class="btn ${plugin.running ? 'btn-secondary' : 'btn-success'}" 
-                                onclick="rigClient.${plugin.running ? 'stopPlugin' : 'startPlugin'}('${plugin.key}')">
-                            ${plugin.running ? 'Stop' : 'Start'}
-                        </button>
-                    ` : ''}
                     <a href="/plugins/${plugin.key}/settings/" class="btn btn-primary" style="text-decoration: none; color: white;">⚙️ Settings</a>
                 </div>
             `;
@@ -706,6 +672,7 @@ class RigWebClient {
             this.log(`Plugin ${pluginKey} ${enabled ? 'enabled' : 'disabled'}`, 'success');
             await this.loadPluginConfigs();
             await this.loadPlugins();
+            await this.loadFeatureCards();
         } catch (error) {
             this.log(`Failed to toggle plugin: ${error.message}`, 'error');
         }
