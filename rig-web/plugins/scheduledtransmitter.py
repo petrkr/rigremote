@@ -33,7 +33,6 @@ class ScheduledTransmitter(PluginModule):
                 self.config = {
                     "transmission_path": "/mnt/data/sstv",
                     "check_interval": 60,
-                    "default_mode": "SSTV",
                     "max_file_size": "10MB"
                 }
         except Exception as e:
@@ -41,7 +40,6 @@ class ScheduledTransmitter(PluginModule):
             self.config = {
                 "transmission_path": "/mnt/data/sstv",
                 "check_interval": 60,
-                "default_mode": "SSTV",
                 "max_file_size": "10MB"
             }
     
@@ -284,7 +282,6 @@ class ScheduledTransmitter(PluginModule):
                 template_content = template_content.replace('{{ plugin.label }}', self.label)
                 template_content = template_content.replace('{{ config.get(\'transmission_path\', \'/mnt/data/sstv\') }}', self.config.get('transmission_path', '/mnt/data/sstv'))
                 template_content = template_content.replace('{{ config.get(\'check_interval\', 60) }}', str(self.config.get('check_interval', 60)))
-                template_content = template_content.replace('{{ config.get(\'default_mode\') }}', self.config.get('default_mode', 'SSTV'))
                 
                 return template_content
             except Exception as e:
@@ -436,13 +433,6 @@ class ScheduledTransmitter(PluginModule):
                 "minimum": 1,
                 "maximum": 3600,
                 "default": 60
-            },
-            "default_mode": {
-                "type": "string",
-                "title": "Default Mode",
-                "description": "Default transmission mode",
-                "enum": ["SSTV", "CW", "PSK31"],
-                "default": "SSTV"
             },
             "max_file_size": {
                 "type": "string",

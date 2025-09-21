@@ -271,21 +271,12 @@
                     <label>Transmission Path:</label>
                     <input type="text" id="transmission-path" value="{{ config.get('transmission_path', '/mnt/data/sstv') }}">
                 </div>
-                
+
                 <div class="config-item">
                     <label>Check Interval (seconds):</label>
                     <input type="number" id="check-interval" value="{{ config.get('check_interval', 60) }}">
                 </div>
-                
-                <div class="config-item">
-                    <label>Default Mode:</label>
-                    <select id="default-mode">
-                        <option value="SSTV" {{ 'selected' if config.get('default_mode') == 'SSTV' else '' }}>SSTV</option>
-                        <option value="CW" {{ 'selected' if config.get('default_mode') == 'CW' else '' }}>CW</option>
-                        <option value="PSK31" {{ 'selected' if config.get('default_mode') == 'PSK31' else '' }}>PSK31</option>
-                    </select>
-                </div>
-                
+
                 <div class="form-actions">
                     <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
                 </div>
@@ -667,7 +658,6 @@
                 settings: {
                     transmission_path: document.getElementById('transmission-path').value,
                     check_interval: parseInt(document.getElementById('check-interval').value),
-                    default_mode: document.getElementById('default-mode').value
                 }
             };
             
