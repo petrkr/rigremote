@@ -175,8 +175,8 @@ class ScheduledTransmitter(PluginModule):
         return f"/plugins/{self.key}"
     
     def has_settings_interface(self) -> bool:
-        """This plugin provides a settings interface."""
-        return True
+        """Hide settings link from feature cards (UI still reachable via direct URL)."""
+        return False
         
     def get_settings_routes(self) -> str:
         """Return URL prefix for plugin settings."""
@@ -185,7 +185,7 @@ class ScheduledTransmitter(PluginModule):
     def get_card_info(self) -> dict:
         """Return information for plugin card on main page."""
         return {
-            "title": "📻 Scheduled Transmitter",
+            "title": "Scheduled Transmitter",
             "description": "Schedule automatic radio transmissions with audio files",
             "icon": "📻",
             "status": "enabled" if self.enabled else "disabled",
@@ -590,8 +590,7 @@ class ScheduledTransmitter(PluginModule):
         <h1>Settings - {self.label}</h1>
         
         <div class="nav-links">
-            <a href="{self.get_main_routes()}">← Back to Main Interface</a>
-            <a href="/">← Back to Home</a>
+            <a href="/">← Main Interface</a>
         </div>
 
         <!-- Plugin Status -->

@@ -12,18 +12,18 @@
             margin: 0;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         h1, h2 {
             color: #3498db;
             border-bottom: 2px solid #3498db;
             padding-bottom: 0.5rem;
         }
-        
+
         .section {
             background-color: #2c2c2c;
             border-radius: 8px;
@@ -31,349 +31,168 @@
             margin-bottom: 2rem;
             border: 1px solid #444;
         }
-        
-        .tabs {
+
+        .form-actions {
             display: flex;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #444;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        
-        .tab-button {
-            padding: 0.8rem 1.5rem;
-            background: none;
-            border: none;
-            color: #95a5a6;
+
+        input, select, button {
+            background-color: #3c3c3c;
+            border: 2px solid #555;
+            color: #e0e0e0;
+            padding: 0.6rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button {
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
         }
-        
-        .tab-button:hover {
-            color: #3498db;
+
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
         }
-        
-        .tab-button.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
+
+        .btn-primary:hover {
+            background-color: #2980b9;
         }
-        
-        .tab-content {
-            display: none;
+
+        .btn-success {
+            background-color: #27ae60;
+            border-color: #27ae60;
         }
-        
-        .tab-content.active {
-            display: block;
+
+        .btn-success:hover {
+            background-color: #2ecc71;
         }
-        
+
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             background-color: #333;
-            border-radius: 5px;
+            border-radius: 6px;
             overflow: hidden;
         }
-        
+
         th, td {
             padding: 0.8rem;
             text-align: left;
             border-bottom: 1px solid #555;
         }
-        
+
         th {
             background-color: #2c3e50;
             color: #3498db;
             font-weight: bold;
         }
-        
+
         tr:hover {
             background-color: #3c3c3c;
         }
-        
-        input, select, button {
-            background-color: #3c3c3c;
-            border: 2px solid #555;
-            color: #e0e0e0;
-            padding: 0.5rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
+
+        .folder-item {
+            background: #333;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+            border: 1px solid #555;
         }
-        
-        input:focus, select:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-        
-        button {
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-        
-        button:hover {
-            background-color: #555;
-        }
-        
-        .btn-primary {
-            background-color: #3498db;
-            border-color: #3498db;
-        }
-        
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-        
-        .btn-success {
-            background-color: #27ae60;
-            border-color: #27ae60;
-        }
-        
-        .btn-success:hover {
-            background-color: #2ecc71;
-        }
-        
-        .btn-danger {
-            background-color: #e74c3c;
-            border-color: #e74c3c;
-        }
-        
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-        
-        .form-actions {
-            margin-top: 1rem;
+
+        .folder-actions {
             display: flex;
-            gap: 1rem;
-            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
         }
-        
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #3498db;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #3498db;
+            color: #fff;
+        }
+
         .progress-container {
             margin: 1rem 0;
             display: none;
         }
-        
+
         progress {
             width: 100%;
-            height: 20px;
+            height: 18px;
         }
-        
+
         .file-upload {
             display: flex;
             gap: 1rem;
             align-items: center;
             margin-bottom: 1rem;
         }
-        
-        .status-indicator {
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        
-        .status-indicator.running {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .status-indicator.stopped {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        .folder-item {
-            background: #333;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 5px;
-            border: 1px solid #555;
-        }
-        
-        .folder-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        audio {
-            width: 100%;
-            margin: 0.5rem 0;
-        }
-        
-        .config-item {
-            margin-bottom: 1rem;
-        }
-        
-        .config-item label {
-            display: block;
-            margin-bottom: 0.3rem;
-            color: #f39c12;
-            font-weight: bold;
-        }
-        
-        .back-link {
-            display: inline-block;
-            margin-top: 1rem;
-            color: #3498db;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid #3498db;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .back-link:hover {
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>{{ plugin.label }}</h1>
-        
+
         <div class="section">
-            <div class="status-indicator {{ 'running' if plugin.running else 'stopped' }}">
-                Status: {{ 'Running' if plugin.running else 'Stopped' }}
-            </div>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTab('folders')">Transmission Sets</button>
-            <button class="tab-button" onclick="showTab('config')">Plugin Config</button>
-            <button class="tab-button" onclick="showTab('daemon')">Daemon Config</button>
-        </div>
-        
-        <!-- Folders/Transmission Sets Tab -->
-        <div id="folders-tab" class="tab-content active">
-            <div class="section">
-                <h2>Transmission Sets</h2>
-                
-                <div class="form-actions">
-                    <input type="text" id="new-folder-name" placeholder="New transmission set name" style="flex: 1;">
-                    <button class="btn-success" onclick="createFolder()">Create Set</button>
-                </div>
-                
-                <div id="folders-list">
-                    <!-- Folders will be loaded here -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Configuration Tab -->
-        <div id="config-tab" class="tab-content">
-            <div class="section">
-                <h2>Plugin Configuration</h2>
-                
-                <div class="config-item">
-                    <label>Transmission Path:</label>
-                    <input type="text" id="transmission-path" value="{{ config.get('transmission_path', '/mnt/data/sstv') }}">
-                </div>
+            <h2>Transmission Sets</h2>
 
+            <div class="form-actions">
+                <input type="text" id="new-folder-name" placeholder="New transmission set name" style="flex: 1;">
+                <button class="btn-success" onclick="createFolder()">Create Set</button>
+            </div>
 
-                <div class="form-actions">
-                    <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
-                </div>
+            <div id="folders-list">
+                <!-- Folders will be loaded here -->
             </div>
         </div>
-        
-        <!-- Daemon Configuration Tab -->
-        <div id="daemon-tab" class="tab-content">
-            <div class="section">
-                <h2>Daemon Configuration (Per-Rig)</h2>
-                
-                <div class="config-item">
-                    <label>Select Rig:</label>
-                    <select id="rig-select" onchange="loadDaemonConfig()">
-                        <option value="">-- Select Rig --</option>
-                    </select>
-                </div>
-                
-                <div id="daemon-config-section" style="display: none;">
-                    <h3 id="daemon-config-title">Daemon Configuration for Rig</h3>
-                    
-                    <div class="config-item">
-                        <label>Enabled:</label>
-                        <select id="daemon-enabled">
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Transmission Sets Path:</label>
-                        <input type="text" id="daemon-transmission-path" placeholder="/mnt/data/sstv">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Check Interval (seconds):</label>
-                        <input type="number" id="daemon-check-interval" value="60">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Audio Device Name:</label>
-                        <input type="text" id="daemon-audio-device" placeholder="pulse">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Rig Address:</label>
-                        <input type="text" id="daemon-rig-address" placeholder="localhost:4532">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Signal Power Threshold (dBm):</label>
-                        <input type="number" id="daemon-signal-threshold" value="-80">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Max Waiting Time (seconds):</label>
-                        <input type="number" id="daemon-max-wait" value="300">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Log Level:</label>
-                        <select id="daemon-log-level">
-                            <option value="DEBUG">DEBUG</option>
-                            <option value="INFO">INFO</option>
-                            <option value="WARNING">WARNING</option>
-                            <option value="ERROR">ERROR</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button class="btn-primary" onclick="saveDaemonConfig()">Save Daemon Configuration</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <a href="/" class="back-link">← Back to Main Interface</a>
+
+        <a href="/" class="back-link">← Main Interface</a>
     </div>
-    
-    <!-- Hidden modals -->
+
     <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c2c2c; padding: 2rem; border-radius: 8px; width: 90%; max-width: 1200px; max-height: 90%; overflow-y: auto;">
             <h2 id="modal-title">Edit Schedule</h2>
-            <div id="modal-content">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="form-actions">
+            <div id="modal-content"></div>
+            <div class="form-actions" style="justify-content: flex-end;">
                 <button class="btn-success" onclick="saveSchedule()">Save Changes</button>
                 <button class="btn-danger" onclick="closeModal()">Cancel</button>
             </div>
         </div>
     </div>
-    
+
     <div id="audio-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c2c2c; padding: 2rem; border-radius: 8px; width: 90%; max-width: 800px; max-height: 90%; overflow-y: auto;">
             <h2 id="audio-modal-title">Manage Audio Files</h2>
-            <div id="audio-modal-content">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="form-actions">
+            <div id="audio-modal-content"></div>
+            <div class="form-actions" style="justify-content: flex-end;">
                 <button class="btn-danger" onclick="closeAudioModal()">Close</button>
             </div>
         </div>
@@ -381,36 +200,24 @@
 
     <script>
         let currentFolder = null;
-        
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
-            
-            if (tabName === 'folders') {
-                loadFolders();
-            } else if (tabName === 'daemon') {
-                loadRigList();
-            }
-        }
-        
+
+        document.addEventListener('DOMContentLoaded', loadFolders);
+
         async function loadFolders() {
             try {
                 const response = await fetch('/plugins/scheduled_transmitter/folders');
                 const data = await response.json();
-                
+                const folders = Array.isArray(data.folders) ? data.folders : [];
+
                 const container = document.getElementById('folders-list');
                 container.innerHTML = '';
-                
-                data.folders.forEach(folder => {
+
+                if (folders.length === 0) {
+                    container.innerHTML = '<p style="color: #7f8c8d;">No transmission sets defined yet.</p>';
+                    return;
+                }
+
+                folders.forEach(folder => {
                     const folderDiv = document.createElement('div');
                     folderDiv.className = 'folder-item';
                     folderDiv.innerHTML = `
@@ -427,40 +234,72 @@
                 console.error('Failed to load folders:', error);
             }
         }
-        
+
         async function createFolder() {
-            const name = document.getElementById('new-folder-name').value.trim();
+            const input = document.getElementById('new-folder-name');
+            const name = input.value.trim();
             if (!name) {
                 alert('Please enter a folder name');
                 return;
             }
-            
+
             try {
                 const response = await fetch('/plugins/scheduled_transmitter/folders', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name: name})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
                 });
-                
-                if (response.ok) {
-                    document.getElementById('new-folder-name').value = '';
-                    loadFolders();
-                } else {
-                    alert('Failed to create folder');
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    alert(error.error || 'Failed to create folder');
+                    return;
                 }
+
+                input.value = '';
+                loadFolders();
             } catch (error) {
                 console.error('Failed to create folder:', error);
             }
         }
-        
+
+        async function deleteFolder(folderName) {
+            if (!confirm(`Delete transmission set "${folderName}"? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/folders/${folderName}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    alert(error.error || 'Failed to delete folder');
+                    return;
+                }
+
+                if (currentFolder === folderName) {
+                    closeModal();
+                    closeAudioModal();
+                    currentFolder = null;
+                }
+
+                loadFolders();
+            } catch (error) {
+                console.error('Failed to delete folder:', error);
+            }
+        }
+
         async function editSchedule(folderName) {
             currentFolder = folderName;
             try {
                 const response = await fetch(`/plugins/scheduled_transmitter/schedule/${folderName}`);
                 const data = await response.json();
-                
+                const rows = Array.isArray(data.schedule) ? data.schedule : [];
+
                 document.getElementById('modal-title').textContent = `Edit Schedule - ${folderName}`;
-                
+
                 let html = `
                     <table id="schedule-table">
                         <thead>
@@ -478,128 +317,120 @@
                         </thead>
                         <tbody>
                 `;
-                
-                data.schedule.forEach((row, index) => {
+
+                rows.forEach(row => {
                     html += `
                         <tr>
-                            <td><input type="text" name="Start Date" value="${row['Start Date'] || ''}" class="datepicker"></td>
-                            <td><input type="text" name="End Date" value="${row['End Date'] || ''}" class="datepicker"></td>
+                            <td><input type="text" name="Start Date" value="${row['Start Date'] || ''}"></td>
+                            <td><input type="text" name="End Date" value="${row['End Date'] || ''}"></td>
                             <td><input type="text" name="Start Time" value="${row['Start Time'] || ''}"></td>
                             <td><input type="number" name="Duration (minutes)" value="${row['Duration (minutes)'] || ''}"></td>
                             <td><input type="number" step="0.001" name="Frequency (MHz)" value="${row['Frequency (MHz)'] || ''}"></td>
-                            <td>
-                                <select name="Mode">
-                                    <option value="USB" ${row['Mode'] === 'USB' ? 'selected' : ''}>USB</option>
-                                    <option value="LSB" ${row['Mode'] === 'LSB' ? 'selected' : ''}>LSB</option>
-                                    <option value="FM" ${row['Mode'] === 'FM' ? 'selected' : ''}>FM</option>
-                                    <option value="AM" ${row['Mode'] === 'AM' ? 'selected' : ''}>AM</option>
-                                </select>
-                            </td>
+                            <td><input type="text" name="Mode" value="${row['Mode'] || ''}"></td>
                             <td><input type="number" name="Power (W)" value="${row['Power (W)'] || ''}"></td>
                             <td><input type="number" name="Pause (sec)" value="${row['Pause (sec)'] || ''}"></td>
                             <td><button type="button" class="btn-danger" onclick="deleteRow(this)">Delete</button></td>
                         </tr>
                     `;
                 });
-                
+
                 html += `
                         </tbody>
                     </table>
-                    <div class="form-actions">
+                    <div class="form-actions" style="justify-content: flex-end;">
                         <button type="button" class="btn-success" onclick="addRow()">Add Row</button>
                     </div>
                 `;
-                
+
                 document.getElementById('modal-content').innerHTML = html;
                 document.getElementById('edit-modal').style.display = 'block';
-                
             } catch (error) {
                 console.error('Failed to load schedule:', error);
             }
         }
-        
+
         function addRow() {
             const tbody = document.querySelector('#schedule-table tbody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td><input type="text" name="Start Date" value="" class="datepicker"></td>
-                <td><input type="text" name="End Date" value="" class="datepicker"></td>
-                <td><input type="text" name="Start Time" value=""></td>
-                <td><input type="number" name="Duration (minutes)" value=""></td>
-                <td><input type="number" step="0.001" name="Frequency (MHz)" value=""></td>
-                <td>
-                    <select name="Mode">
-                        <option value="USB">USB</option>
-                        <option value="LSB">LSB</option>
-                        <option value="FM">FM</option>
-                        <option value="AM">AM</option>
-                    </select>
-                </td>
-                <td><input type="number" name="Power (W)" value=""></td>
-                <td><input type="number" name="Pause (sec)" value=""></td>
+                <td><input type="text" name="Start Date"></td>
+                <td><input type="text" name="End Date"></td>
+                <td><input type="text" name="Start Time"></td>
+                <td><input type="number" name="Duration (minutes)"></td>
+                <td><input type="number" step="0.001" name="Frequency (MHz)"></td>
+                <td><input type="text" name="Mode"></td>
+                <td><input type="number" name="Power (W)"></td>
+                <td><input type="number" name="Pause (sec)"></td>
                 <td><button type="button" class="btn-danger" onclick="deleteRow(this)">Delete</button></td>
             `;
             tbody.appendChild(newRow);
         }
-        
+
         function deleteRow(button) {
-            if (confirm('Are you sure you want to delete this row?')) {
+            if (confirm('Delete this row?')) {
                 button.closest('tr').remove();
             }
         }
-        
+
         async function saveSchedule() {
             const table = document.getElementById('schedule-table');
+            if (!table) {
+                return;
+            }
+
             const rows = table.querySelectorAll('tbody tr');
-            const data = [];
-            
+            const payload = [];
+
             rows.forEach(row => {
                 const rowData = {};
-                row.querySelectorAll('input, select').forEach(input => {
+                row.querySelectorAll('input').forEach(input => {
                     if (input.name) {
                         rowData[input.name] = input.value;
                     }
                 });
-                data.push(rowData);
+                payload.push(rowData);
             });
-            
+
             try {
                 const response = await fetch(`/plugins/scheduled_transmitter/schedule/${currentFolder}`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({schedule: data})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ schedule: payload })
                 });
-                
-                if (response.ok) {
-                    alert('Schedule saved successfully!');
-                    closeModal();
-                } else {
-                    alert('Failed to save schedule');
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    alert(error.error || 'Failed to save schedule');
+                    return;
                 }
+
+                alert('Schedule saved successfully!');
+                closeModal();
             } catch (error) {
                 console.error('Failed to save schedule:', error);
             }
         }
-        
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
         async function manageAudio(folderName) {
             currentFolder = folderName;
             try {
                 const response = await fetch(`/plugins/scheduled_transmitter/audio/${folderName}`);
                 const data = await response.json();
-                
-                document.getElementById('audio-modal-title').textContent = `Manage Audio Files - ${folderName}`;
-                
+                const files = Array.isArray(data.files) ? data.files : [];
+
                 let html = `
                     <div class="file-upload">
                         <input type="file" id="audio-file" accept=".wav,.mp3" multiple>
                         <button class="btn-success" onclick="uploadFiles()">Upload</button>
                     </div>
-                    
                     <div id="upload-progress" class="progress-container">
                         <progress id="progress-bar" value="0" max="100"></progress>
                         <span id="progress-text">0%</span>
                     </div>
-                    
                     <table>
                         <thead>
                             <tr>
@@ -609,8 +440,8 @@
                         </thead>
                         <tbody>
                 `;
-                
-                data.files.forEach(file => {
+
+                files.forEach(file => {
                     html += `
                         <tr>
                             <td>${file}</td>
@@ -621,248 +452,107 @@
                         </tr>
                     `;
                 });
-                
+
                 html += `
                         </tbody>
                     </table>
                     <audio id="audio-player" controls style="width: 100%; margin-top: 1rem; display: none;"></audio>
                 `;
-                
+
                 document.getElementById('audio-modal-content').innerHTML = html;
                 document.getElementById('audio-modal').style.display = 'block';
-                
             } catch (error) {
                 console.error('Failed to load audio files:', error);
             }
         }
-        
+
         async function uploadFiles() {
             const fileInput = document.getElementById('audio-file');
+            if (!fileInput || !currentFolder) {
+                return;
+            }
             const files = fileInput.files;
-            
             if (files.length === 0) {
                 alert('Please select files to upload');
                 return;
             }
-            
+
             const progressContainer = document.getElementById('upload-progress');
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
-            
+
             progressContainer.style.display = 'block';
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+
+            for (let index = 0; index < files.length; index += 1) {
+                const file = files[index];
                 const formData = new FormData();
                 formData.append('audio_file', file);
-                
+
                 try {
                     const response = await fetch(`/plugins/scheduled_transmitter/audio/${currentFolder}`, {
                         method: 'POST',
                         body: formData
                     });
-                    
-                    if (response.ok) {
-                        const progress = ((i + 1) / files.length) * 100;
-                        progressBar.value = progress;
-                        progressText.textContent = `${Math.round(progress)}%`;
-                    } else {
+
+                    if (!response.ok) {
                         alert(`Failed to upload ${file.name}`);
+                        continue;
                     }
+
+                    const progress = ((index + 1) / files.length) * 100;
+                    progressBar.value = progress;
+                    progressText.textContent = `${Math.round(progress)}%`;
                 } catch (error) {
                     console.error(`Failed to upload ${file.name}:`, error);
                 }
             }
-            
+
             progressContainer.style.display = 'none';
             fileInput.value = '';
-            manageAudio(currentFolder); // Reload the file list
+            manageAudio(currentFolder);
         }
-        
+
         function playAudio(fileName) {
             const player = document.getElementById('audio-player');
+            if (!player) {
+                return;
+            }
             player.src = `/plugins/scheduled_transmitter/audio/${currentFolder}/${fileName}`;
             player.style.display = 'block';
-            player.play();
+            player.play().catch(error => console.error('Failed to play audio:', error));
         }
-        
+
         async function deleteAudio(fileName) {
-            if (confirm(`Are you sure you want to delete ${fileName}?`)) {
-                try {
-                    const response = await fetch(`/plugins/scheduled_transmitter/audio/${currentFolder}/${fileName}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (response.ok) {
-                        manageAudio(currentFolder); // Reload the file list
-                    } else {
-                        alert('Failed to delete file');
-                    }
-                } catch (error) {
-                    console.error('Failed to delete file:', error);
-                }
+            if (!confirm(`Delete ${fileName}?`)) {
+                return;
             }
-        }
-        
-        async function deleteFolder(folderName) {
-            if (confirm(`Are you sure you want to delete the entire transmission set "${folderName}"? This cannot be undone.`)) {
-                try {
-                    const response = await fetch(`/plugins/scheduled_transmitter/folders/${folderName}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (response.ok) {
-                        loadFolders();
-                    } else {
-                        alert('Failed to delete folder');
-                    }
-                } catch (error) {
-                    console.error('Failed to delete folder:', error);
-                }
-            }
-        }
-        
-        async function saveConfig() {
-            const config = {
-                settings: {
-                    transmission_path: document.getElementById('transmission-path').value,
-                }
-            };
-            
+
             try {
-                const response = await fetch('/plugins/scheduled_transmitter/config', {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(config)
+                const response = await fetch(`/plugins/scheduled_transmitter/audio/${currentFolder}/${fileName}`, {
+                    method: 'DELETE'
                 });
-                
-                if (response.ok) {
-                    alert('Configuration saved successfully!');
-                } else {
-                    alert('Failed to save configuration');
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    alert(error.error || 'Failed to delete file');
+                    return;
                 }
+
+                manageAudio(currentFolder);
             } catch (error) {
-                console.error('Failed to save configuration:', error);
+                console.error('Failed to delete file:', error);
             }
         }
-        
-        function closeModal() {
-            document.getElementById('edit-modal').style.display = 'none';
-        }
-        
+
         function closeAudioModal() {
-            document.getElementById('audio-modal').style.display = 'none';
+            const modal = document.getElementById('audio-modal');
+            const player = document.getElementById('audio-player');
+            if (player) {
+                player.pause();
+                player.currentTime = 0;
+            }
+            modal.style.display = 'none';
         }
-        
-        async function loadRigList() {
-            try {
-                const response = await fetch('/api/radios');
-                const data = await response.json();
-                
-                const select = document.getElementById('rig-select');
-                select.innerHTML = '<option value="">-- Select Rig --</option>';
-                
-                data.radios.forEach(radio => {
-                    const option = document.createElement('option');
-                    option.value = radio.id;
-                    option.textContent = `${radio.name} (${radio.id})`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Failed to load rig list:', error);
-            }
-        }
-        
-        async function loadDaemonConfig() {
-            const rigId = document.getElementById('rig-select').value;
-            const configSection = document.getElementById('daemon-config-section');
-            const configTitle = document.getElementById('daemon-config-title');
-            
-            if (!rigId) {
-                configSection.style.display = 'none';
-                return;
-            }
-            
-            configTitle.textContent = `Daemon Configuration for ${rigId}`;
-            configSection.style.display = 'block';
-            
-            try {
-                const response = await fetch(`/plugins/scheduled_transmitter/daemon-config/${rigId}`);
-                const data = await response.json();
-                
-                // Fill form with existing config or defaults
-                const config = data.config;
-                document.getElementById('daemon-enabled').value = config.daemon?.enabled ? 'true' : 'false';
-                document.getElementById('daemon-transmission-path').value = config.daemon?.transmission_sets_path || '/mnt/data/sstv';
-                document.getElementById('daemon-check-interval').value = config.daemon?.check_interval || 60;
-                document.getElementById('daemon-audio-device').value = config.daemon?.audio_device_name || 'pulse';
-                document.getElementById('daemon-rig-address').value = config.rig?.address || 'localhost:4532';
-                document.getElementById('daemon-signal-threshold').value = config.rig?.signal_power_threshold || -80;
-                document.getElementById('daemon-max-wait').value = config.rig?.max_waiting_time || 300;
-                document.getElementById('daemon-log-level').value = config.logging?.level || 'INFO';
-                
-            } catch (error) {
-                console.error('Failed to load daemon config:', error);
-                // Set defaults if config doesn't exist
-                document.getElementById('daemon-enabled').value = 'false';
-                document.getElementById('daemon-transmission-path').value = '/mnt/data/sstv';
-                document.getElementById('daemon-check-interval').value = '60';
-                document.getElementById('daemon-audio-device').value = 'pulse';
-                document.getElementById('daemon-rig-address').value = 'localhost:4532';
-                document.getElementById('daemon-signal-threshold').value = '-80';
-                document.getElementById('daemon-max-wait').value = '300';
-                document.getElementById('daemon-log-level').value = 'INFO';
-            }
-        }
-        
-        async function saveDaemonConfig() {
-            const rigId = document.getElementById('rig-select').value;
-            if (!rigId) {
-                alert('Please select a rig first');
-                return;
-            }
-            
-            const config = {
-                daemon: {
-                    enabled: document.getElementById('daemon-enabled').value === 'true',
-                    rig_id: rigId,
-                    transmission_sets_path: document.getElementById('daemon-transmission-path').value,
-                    check_interval: parseInt(document.getElementById('daemon-check-interval').value),
-                    audio_device_name: document.getElementById('daemon-audio-device').value
-                },
-                rig: {
-                    address: document.getElementById('daemon-rig-address').value,
-                    signal_power_threshold: parseInt(document.getElementById('daemon-signal-threshold').value),
-                    max_waiting_time: parseInt(document.getElementById('daemon-max-wait').value)
-                },
-                logging: {
-                    level: document.getElementById('daemon-log-level').value,
-                    file: `/var/log/rig-web/scheduled_transmitter_${rigId}.log`
-                }
-            };
-            
-            try {
-                const response = await fetch(`/plugins/scheduled_transmitter/daemon-config/${rigId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(config)
-                });
-                
-                if (response.ok) {
-                    alert('Daemon configuration saved successfully!');
-                } else {
-                    alert('Failed to save daemon configuration');
-                }
-            } catch (error) {
-                console.error('Failed to save daemon configuration:', error);
-                alert('Failed to save daemon configuration');
-            }
-        }
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFolders();
-        });
     </script>
 </body>
 </html>
