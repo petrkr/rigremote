@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Transmitter - {{ plugin.label }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1, h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section {
+            background-color: #2c2c2c;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #444;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #444;
+        }
+        
+        .tab-button {
+            padding: 0.8rem 1.5rem;
+            background: none;
+            border: none;
+            color: #95a5a6;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            color: #3498db;
+        }
+        
+        .tab-button.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #555;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #3c3c3c;
+        }
+        
+        input, select, button {
+            background-color: #3c3c3c;
+            border: 2px solid #555;
+            color: #e0e0e0;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #555;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background-color: #2ecc71;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .form-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .progress-container {
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        progress {
+            width: 100%;
+            height: 20px;
+        }
+        
+        .file-upload {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .status-indicator {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-indicator.running {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-indicator.stopped {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .folder-item {
+            background: #333;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        
+        .folder-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        audio {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .config-item {
+            margin-bottom: 1rem;
+        }
+        
+        .config-item label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #3498db;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ plugin.label }}</h1>
+        
+        <div class="section">
+            <div class="status-indicator {{ 'running' if plugin.running else 'stopped' }}">
+                Status: {{ 'Running' if plugin.running else 'Stopped' }}
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('folders')">Transmission Sets</button>
+            <button class="tab-button" onclick="showTab('config')">Configuration</button>
+        </div>
+        
+        <!-- Folders/Transmission Sets Tab -->
+        <div id="folders-tab" class="tab-content active">
+            <div class="section">
+                <h2>Transmission Sets</h2>
+                
+                <div class="form-actions">
+                    <input type="text" id="new-folder-name" placeholder="New transmission set name" style="flex: 1;">
+                    <button class="btn-success" onclick="createFolder()">Create Set</button>
+                </div>
+                
+                <div id="folders-list">
+                    <!-- Folders will be loaded here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configuration Tab -->
+        <div id="config-tab" class="tab-content">
+            <div class="section">
+                <h2>Plugin Configuration</h2>
+                
+                <div class="config-item">
+                    <label>Transmission Path:</label>
+                    <input type="text" id="transmission-path" value="{{ config.get('transmission_path', '/mnt/data/sstv') }}">
+                </div>
+                
+                <div class="config-item">
+                    <label>Check Interval (seconds):</label>
+                    <input type="number" id="check-interval" value="{{ config.get('check_interval', 60) }}">
+                </div>
+                
+                <div class="config-item">
+                    <label>Default Mode:</label>
+                    <select id="default-mode">
+                        <option value="SSTV" {{ 'selected' if config.get('default_mode') == 'SSTV' else '' }}>SSTV</option>
+                        <option value="CW" {{ 'selected' if config.get('default_mode') == 'CW' else '' }}>CW</option>
+                        <option value="PSK31" {{ 'selected' if config.get('default_mode') == 'PSK31' else '' }}>PSK31</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+        
+        <a href="/" class="back-link">← Back to Main Interface</a>
+    </div>
+    
+    <!-- Hidden modals -->
+    <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c2c2c; padding: 2rem; border-radius: 8px; width: 90%; max-width: 1200px; max-height: 90%; overflow-y: auto;">
+            <h2 id="modal-title">Edit Schedule</h2>
+            <div id="modal-content">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button class="btn-success" onclick="saveSchedule()">Save Changes</button>
+                <button class="btn-danger" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="audio-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c2c2c; padding: 2rem; border-radius: 8px; width: 90%; max-width: 800px; max-height: 90%; overflow-y: auto;">
+            <h2 id="audio-modal-title">Manage Audio Files</h2>
+            <div id="audio-modal-content">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button class="btn-danger" onclick="closeAudioModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFolder = null;
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'folders') {
+                loadFolders();
+            }
+        }
+        
+        async function loadFolders() {
+            try {
+                const response = await fetch('/plugins/scheduled_transmitter/folders');
+                const data = await response.json();
+                
+                const container = document.getElementById('folders-list');
+                container.innerHTML = '';
+                
+                data.folders.forEach(folder => {
+                    const folderDiv = document.createElement('div');
+                    folderDiv.className = 'folder-item';
+                    folderDiv.innerHTML = `
+                        <h3>${folder}</h3>
+                        <div class="folder-actions">
+                            <button class="btn-primary" onclick="editSchedule('${folder}')">Edit Schedule</button>
+                            <button class="btn-primary" onclick="manageAudio('${folder}')">Manage Audio</button>
+                            <button class="btn-danger" onclick="deleteFolder('${folder}')">Delete Set</button>
+                        </div>
+                    `;
+                    container.appendChild(folderDiv);
+                });
+            } catch (error) {
+                console.error('Failed to load folders:', error);
+            }
+        }
+        
+        async function createFolder() {
+            const name = document.getElementById('new-folder-name').value.trim();
+            if (!name) {
+                alert('Please enter a folder name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/plugins/scheduled_transmitter/folders', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: name})
+                });
+                
+                if (response.ok) {
+                    document.getElementById('new-folder-name').value = '';
+                    loadFolders();
+                } else {
+                    alert('Failed to create folder');
+                }
+            } catch (error) {
+                console.error('Failed to create folder:', error);
+            }
+        }
+        
+        async function editSchedule(folderName) {
+            currentFolder = folderName;
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/schedule/${folderName}`);
+                const data = await response.json();
+                
+                document.getElementById('modal-title').textContent = `Edit Schedule - ${folderName}`;
+                
+                let html = `
+                    <table id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Start Time</th>
+                                <th>Duration (min)</th>
+                                <th>Frequency (MHz)</th>
+                                <th>Mode</th>
+                                <th>Power (W)</th>
+                                <th>Pause (sec)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.schedule.forEach((row, index) => {
+                    html += `
+                        <tr>
+                            <td><input type="text" name="Start Date" value="${row['Start Date'] || ''}" class="datepicker"></td>
+                            <td><input type="text" name="End Date" value="${row['End Date'] || ''}" class="datepicker"></td>
+                            <td><input type="text" name="Start Time" value="${row['Start Time'] || ''}"></td>
+                            <td><input type="number" name="Duration (minutes)" value="${row['Duration (minutes)'] || ''}"></td>
+                            <td><input type="number" step="0.001" name="Frequency (MHz)" value="${row['Frequency (MHz)'] || ''}"></td>
+                            <td>
+                                <select name="Mode">
+                                    <option value="USB" ${row['Mode'] === 'USB' ? 'selected' : ''}>USB</option>
+                                    <option value="LSB" ${row['Mode'] === 'LSB' ? 'selected' : ''}>LSB</option>
+                                    <option value="FM" ${row['Mode'] === 'FM' ? 'selected' : ''}>FM</option>
+                                    <option value="AM" ${row['Mode'] === 'AM' ? 'selected' : ''}>AM</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="Power (W)" value="${row['Power (W)'] || ''}"></td>
+                            <td><input type="number" name="Pause (sec)" value="${row['Pause (sec)'] || ''}"></td>
+                            <td><button type="button" class="btn-danger" onclick="deleteRow(this)">Delete</button></td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                    <div class="form-actions">
+                        <button type="button" class="btn-success" onclick="addRow()">Add Row</button>
+                    </div>
+                `;
+                
+                document.getElementById('modal-content').innerHTML = html;
+                document.getElementById('edit-modal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to load schedule:', error);
+            }
+        }
+        
+        function addRow() {
+            const tbody = document.querySelector('#schedule-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" name="Start Date" value="" class="datepicker"></td>
+                <td><input type="text" name="End Date" value="" class="datepicker"></td>
+                <td><input type="text" name="Start Time" value=""></td>
+                <td><input type="number" name="Duration (minutes)" value=""></td>
+                <td><input type="number" step="0.001" name="Frequency (MHz)" value=""></td>
+                <td>
+                    <select name="Mode">
+                        <option value="USB">USB</option>
+                        <option value="LSB">LSB</option>
+                        <option value="FM">FM</option>
+                        <option value="AM">AM</option>
+                    </select>
+                </td>
+                <td><input type="number" name="Power (W)" value=""></td>
+                <td><input type="number" name="Pause (sec)" value=""></td>
+                <td><button type="button" class="btn-danger" onclick="deleteRow(this)">Delete</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+        
+        function deleteRow(button) {
+            if (confirm('Are you sure you want to delete this row?')) {
+                button.closest('tr').remove();
+            }
+        }
+        
+        async function saveSchedule() {
+            const table = document.getElementById('schedule-table');
+            const rows = table.querySelectorAll('tbody tr');
+            const data = [];
+            
+            rows.forEach(row => {
+                const rowData = {};
+                row.querySelectorAll('input, select').forEach(input => {
+                    if (input.name) {
+                        rowData[input.name] = input.value;
+                    }
+                });
+                data.push(rowData);
+            });
+            
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/schedule/${currentFolder}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({schedule: data})
+                });
+                
+                if (response.ok) {
+                    alert('Schedule saved successfully!');
+                    closeModal();
+                } else {
+                    alert('Failed to save schedule');
+                }
+            } catch (error) {
+                console.error('Failed to save schedule:', error);
+            }
+        }
+        
+        async function manageAudio(folderName) {
+            currentFolder = folderName;
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/audio/${folderName}`);
+                const data = await response.json();
+                
+                document.getElementById('audio-modal-title').textContent = `Manage Audio Files - ${folderName}`;
+                
+                let html = `
+                    <div class="file-upload">
+                        <input type="file" id="audio-file" accept=".wav,.mp3" multiple>
+                        <button class="btn-success" onclick="uploadFiles()">Upload</button>
+                    </div>
+                    
+                    <div id="upload-progress" class="progress-container">
+                        <progress id="progress-bar" value="0" max="100"></progress>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.files.forEach(file => {
+                    html += `
+                        <tr>
+                            <td>${file}</td>
+                            <td>
+                                <button class="btn-primary" onclick="playAudio('${file}')">Play</button>
+                                <button class="btn-danger" onclick="deleteAudio('${file}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                    <audio id="audio-player" controls style="width: 100%; margin-top: 1rem; display: none;"></audio>
+                `;
+                
+                document.getElementById('audio-modal-content').innerHTML = html;
+                document.getElementById('audio-modal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to load audio files:', error);
+            }
+        }
+        
+        async function uploadFiles() {
+            const fileInput = document.getElementById('audio-file');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+            
+            const progressContainer = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            progressContainer.style.display = 'block';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const formData = new FormData();
+                formData.append('audio_file', file);
+                
+                try {
+                    const response = await fetch(`/plugins/scheduled_transmitter/audio/${currentFolder}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const progress = ((i + 1) / files.length) * 100;
+                        progressBar.value = progress;
+                        progressText.textContent = `${Math.round(progress)}%`;
+                    } else {
+                        alert(`Failed to upload ${file.name}`);
+                    }
+                } catch (error) {
+                    console.error(`Failed to upload ${file.name}:`, error);
+                }
+            }
+            
+            progressContainer.style.display = 'none';
+            fileInput.value = '';
+            manageAudio(currentFolder); // Reload the file list
+        }
+        
+        function playAudio(fileName) {
+            const player = document.getElementById('audio-player');
+            player.src = `/plugins/scheduled_transmitter/audio/${currentFolder}/${fileName}`;
+            player.style.display = 'block';
+            player.play();
+        }
+        
+        async function deleteAudio(fileName) {
+            if (confirm(`Are you sure you want to delete ${fileName}?`)) {
+                try {
+                    const response = await fetch(`/plugins/scheduled_transmitter/audio/${currentFolder}/${fileName}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        manageAudio(currentFolder); // Reload the file list
+                    } else {
+                        alert('Failed to delete file');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete file:', error);
+                }
+            }
+        }
+        
+        async function deleteFolder(folderName) {
+            if (confirm(`Are you sure you want to delete the entire transmission set "${folderName}"? This cannot be undone.`)) {
+                try {
+                    const response = await fetch(`/plugins/scheduled_transmitter/folders/${folderName}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        loadFolders();
+                    } else {
+                        alert('Failed to delete folder');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete folder:', error);
+                }
+            }
+        }
+        
+        async function saveConfig() {
+            const config = {
+                settings: {
+                    transmission_path: document.getElementById('transmission-path').value,
+                    check_interval: parseInt(document.getElementById('check-interval').value),
+                    default_mode: document.getElementById('default-mode').value
+                }
+            };
+            
+            try {
+                const response = await fetch('/plugins/scheduled_transmitter/config', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                
+                if (response.ok) {
+                    alert('Configuration saved successfully!');
+                } else {
+                    alert('Failed to save configuration');
+                }
+            } catch (error) {
+                console.error('Failed to save configuration:', error);
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+        
+        function closeAudioModal() {
+            document.getElementById('audio-modal').style.display = 'none';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFolders();
+        });
+    </script>
+</body>
+</html>

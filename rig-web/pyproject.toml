@@ -1,0 +1,136 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rig-remote-web"
+version = "1.0.0"
+description = "Web-based remote control system for amateur radio equipment"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "RIG Remote Team"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications :: Ham Radio",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+
+dependencies = [
+    "flask>=2.3.0",
+    "flask-sock>=0.7.0",
+    "tomli>=2.0.0; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "ruff>=0.0.280",
+    "mypy>=1.5.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+production = [
+    "gunicorn>=21.0.0",
+    "uvicorn>=0.23.0",
+    "waitress>=2.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rigremote/rig-web"
+Documentation = "https://github.com/rigremote/rig-web/wiki"
+Repository = "https://github.com/rigremote/rig-web.git"
+Issues = "https://github.com/rigremote/rig-web/issues"
+
+[project.scripts]
+rig-web = "app:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["B011"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --cov=core --cov=radios --cov=plugins --cov=web --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["core", "radios", "plugins", "web"]
+omit = ["tests/*", "*/test_*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

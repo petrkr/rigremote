@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIG Remote Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>= RIG Remote Control</h1>
+        <div class="status-bar">
+            <span id="connection-status" class="status-indicator disconnected">WebSocket: Disconnected</span>
+            <span id="radio-count">Radios: 0</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Radio Selection -->
+        <section class="radio-selector">
+            <h2>Select Radio</h2>
+            <select id="radio-select" onchange="selectRadio()">
+                <option value="">-- Choose Radio --</option>
+            </select>
+            <button id="refresh-radios" onclick="refreshRadios()">= Refresh</button>
+        </section>
+
+        <!-- Radio Control Panel -->
+        <section id="radio-panel" class="radio-panel hidden">
+            <h2>Radio Control: <span id="selected-radio-name">--</span></h2>
+            
+            <div class="control-grid">
+                <!-- Frequency Control -->
+                <div class="control-group">
+                    <h3>Frequency</h3>
+                    <div class="frequency-display">
+                        <span id="current-frequency">----.--- MHz</span>
+                    </div>
+                    <div class="frequency-input">
+                        <input type="number" id="frequency-input" placeholder="145500000" step="1000">
+                        <label>Hz</label>
+                        <button onclick="setFrequency()">Set</button>
+                    </div>
+                </div>
+
+                <!-- Mode Control -->
+                <div class="control-group">
+                    <h3>Mode</h3>
+                    <div class="mode-display">
+                        <span id="current-mode">--</span>
+                    </div>
+                    <div class="mode-buttons">
+                        <button onclick="setMode('FM')">FM</button>
+                        <button onclick="setMode('AM')">AM</button>
+                        <button onclick="setMode('USB')">USB</button>
+                        <button onclick="setMode('LSB')">LSB</button>
+                        <button onclick="setMode('CW')">CW</button>
+                    </div>
+                </div>
+
+                <!-- PTT Control -->
+                <div class="control-group">
+                    <h3>PTT Control</h3>
+                    <div class="ptt-status">
+                        <span id="ptt-status" class="ptt-off">PTT: OFF</span>
+                    </div>
+                    <div class="ptt-buttons">
+                        <button id="ptt-toggle" onclick="togglePTT()" class="ptt-button">Toggle PTT</button>
+                        <button onmousedown="setPTT(true)" onmouseup="setPTT(false)" onmouseleave="setPTT(false)" 
+                                class="ptt-button">Push to Talk</button>
+                    </div>
+                </div>
+
+                <!-- Signal Meter -->
+                <div class="control-group">
+                    <h3>Signal Strength</h3>
+                    <div class="signal-meter">
+                        <div class="meter-background">
+                            <div id="signal-bar" class="signal-bar"></div>
+                        </div>
+                        <span id="rssi-value">-- dBm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="radio-status">
+                <span id="radio-connection" class="status-indicator">Disconnected</span>
+                <button id="connect-button" onclick="connectRadio()">Connect</button>
+            </div>
+        </section>
+
+        <!-- Plugin Panel -->
+        <section class="plugin-panel">
+            <h2>Plugins</h2>
+            <div id="plugins-list" class="plugins-grid">
+                <!-- Plugins will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Configuration Panel -->
+        <section class="config-panel">
+            <h2>Configuration</h2>
+            <div class="config-tabs">
+                <button class="tab-button active" onclick="showConfigTab('radios')">Radios</button>
+                <button class="tab-button" onclick="showConfigTab('plugins')">Plugins</button>
+                <button class="tab-button" onclick="showConfigTab('app')">Application</button>
+            </div>
+            
+            <div id="config-radios" class="config-tab active">
+                <h3>Radio Configuration</h3>
+                <div id="radios-config-list"></div>
+                
+                <h4>Add New Radio</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Radio Name:</label>
+                        <input type="text" id="new-radio-name" placeholder="My FT-991A" required>
+                        <small>Name will be used to generate internal ID automatically</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Driver Type:</label>
+                        <select id="new-radio-driver" required>
+                            <option value="">-- Select Driver --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button onclick="addRadio()" class="btn btn-success">Add Radio</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="config-plugins" class="config-tab">
+                <h3>Plugin Configuration</h3>
+                <div id="plugins-config-list"></div>
+            </div>
+            
+            <div id="config-app" class="config-tab">
+                <h3>Application Configuration</h3>
+                <div id="app-config-form"></div>
+            </div>
+        </section>
+
+        <!-- Log Panel -->
+        <section class="log-panel">
+            <h2>Activity Log</h2>
+            <div id="activity-log" class="log-container">
+                <div class="log-entry">System started</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

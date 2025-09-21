@@ -1,0 +1,83 @@
+# RIG Remote Control Configuration Example
+# Copy this file to settings.toml and customize for your setup
+
+[app]
+# Application settings
+debug = false
+secret_key = "your-secret-key-here"  # Generate a secure random key for production
+host = "0.0.0.0"
+port = 5000
+
+# Logging configuration
+log_level = "INFO"  # DEBUG, INFO, WARNING, ERROR
+log_file = ""  # Empty for console logging, or path to log file
+
+[security]
+# Authentication settings (for future implementation)
+enable_api_auth = false
+api_key_header = "X-API-Key"
+jwt_secret = "jwt-secret-key"
+session_timeout = 3600  # seconds
+
+# CORS settings
+enable_cors = false
+allowed_origins = ["http://localhost:3000"]
+
+[websocket]
+# WebSocket configuration
+ping_interval = 30  # seconds
+broadcast_interval = 2.0  # seconds for background state broadcasting
+max_connections = 100
+
+[radios]
+# Radio instances configuration
+# Format: [[radios.instances]]
+#         id = "unique_radio_id"
+#         name = "Human readable name"
+#         driver_type = "hamlib"  # Must match a discovered driver
+#         enabled = true
+#         [radios.instances.config]
+#         host = "127.0.0.1"
+#         port = 4532
+
+[[radios.instances]]
+id = "demo_radio"
+name = "Demo Radio"
+driver_type = "fake"
+enabled = true
+[radios.instances.config]
+# No configuration needed for fake radio
+
+[[radios.instances]]
+id = "station_rig"
+name = "Station FT-991A"
+driver_type = "hamlib"  # This would require hamlib driver implementation
+enabled = false
+[radios.instances.config]
+host = "127.0.0.1"
+port = 4532
+
+[plugins]
+# Plugin configuration
+auto_discover = true
+enabled_plugins = ["scheduled_transmitter", "another_plugin"]
+
+# Plugin-specific settings
+[plugins.scheduled_transmitter]
+external_service = true
+transmission_path = "/mnt/data/sstv"
+check_interval = 60
+
+[systemd]
+# Systemd service configuration
+service_template = "systemd/plugin@.service"
+enable_status_check = true
+service_timeout = 5  # seconds
+
+[paths]
+# Directory paths
+radios_dir = "radios"
+plugins_dir = "plugins"
+config_dir = "config"
+templates_dir = "web/ui/templates"
+static_dir = "web/ui/static"
