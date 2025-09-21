@@ -1,0 +1,17 @@
+# Scheduled Transmitter Daemon Configuration for rig1
+
+[daemon]
+enabled = true
+rig_id = "rig1"
+transmission_sets_path = "/mnt/data/sstv"
+check_interval = 60
+audio_device_name = "pulse"
+
+[rig]
+address = "localhost:4532"
+signal_power_threshold = -80
+max_waiting_time = 300
+
+[logging]
+level = "INFO"
+file = "/var/log/rig-web/scheduled_transmitter_rig1.log"

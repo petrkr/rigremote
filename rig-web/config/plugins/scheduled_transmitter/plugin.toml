@@ -1,0 +1,7 @@
+[settings]
+transmission_path = "/mnt/data/sstv"
+
+[metadata]
+version = "1.0.0"
+description = "Plugin for scheduled radio transmissions with CSV editor and audio upload"
+author = "RIG Remote Control"

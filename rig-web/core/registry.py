@@ -72,7 +72,7 @@ class Registry:
             
         sys.path.insert(0, str(plugins_dir.parent))
         
-        # Scan Python files in plugins directory
+        # Scan Python files in plugins directory (legacy support)
         for py_file in plugins_dir.glob("*.py"):
             if py_file.name.startswith("__"):
                 continue
@@ -92,12 +92,45 @@ class Registry:
                             temp_instance = obj(self)
                             plugin_key = temp_instance.key
                             self.plugin_classes[plugin_key] = obj
-                            logger.info(f"Registered plugin: {plugin_key} ({name})")
+                            logger.info(f"Registered plugin: {plugin_key} ({name}) from {py_file}")
                         except Exception as e:
                             logger.error(f"Failed to instantiate plugin {name}: {e}")
                         
             except Exception as e:
                 logger.error(f"Failed to load plugin from {py_file}: {e}")
+        
+        # Scan plugin directories (new structure)
+        for plugin_dir in plugins_dir.iterdir():
+            if not plugin_dir.is_dir() or plugin_dir.name.startswith("__"):
+                continue
+            
+            # Look for __init__.py in plugin directory
+            init_file = plugin_dir / "__init__.py"
+            if not init_file.exists():
+                logger.debug(f"Skipping plugin directory {plugin_dir.name} - no __init__.py found")
+                continue
+            
+            module_name = f"{plugins_path}.{plugin_dir.name}"
+            try:
+                module = importlib.import_module(module_name)
+                
+                # Find classes that inherit from PluginModule
+                for name, obj in inspect.getmembers(module, inspect.isclass):
+                    if (issubclass(obj, PluginModule) and 
+                        obj != PluginModule and 
+                        not inspect.isabstract(obj)):
+                        
+                        # Instantiate plugin to get its key
+                        try:
+                            temp_instance = obj(self)
+                            plugin_key = temp_instance.key
+                            self.plugin_classes[plugin_key] = obj
+                            logger.info(f"Registered plugin: {plugin_key} ({name}) from {plugin_dir}")
+                        except Exception as e:
+                            logger.error(f"Failed to instantiate plugin {name}: {e}")
+                        
+            except Exception as e:
+                logger.error(f"Failed to load plugin from {plugin_dir}: {e}")
     
     def create_radio(self, radio_id: str, driver_type: str, name: str, config: Dict[str, Any]) -> Optional[RadioDriver]:
         """Create a radio instance."""

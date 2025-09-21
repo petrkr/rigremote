@@ -16,6 +16,7 @@ class RigWebClient {
         this.setupWebSocket();
         this.loadRadios();
         this.loadPlugins();
+        this.loadFeatureCards();
         this.loadRadioConfigs();
         this.loadPluginConfigs();
         this.loadRadioDrivers();
@@ -348,6 +349,60 @@ class RigWebClient {
         this.log('Radio connection not yet implemented', 'warning');
     }
     
+    // Feature Cards Management
+    async loadFeatureCards() {
+        try {
+            const response = await this.apiCall('/plugin-cards');
+            this.updateFeatureCardsDisplay(response.cards);
+        } catch (error) {
+            this.log('Failed to load feature cards', 'error');
+        }
+    }
+    
+    updateFeatureCardsDisplay(cards) {
+        const container = document.getElementById('features-grid');
+        container.innerHTML = '';
+        
+        cards.forEach(card => {
+            const cardElement = this.createFeatureCard(card);
+            container.appendChild(cardElement);
+        });
+        
+        if (cards.length === 0) {
+            container.innerHTML = '<p style="color: #7f8c8d; text-align: center; grid-column: 1 / -1;">No features available</p>';
+        }
+    }
+    
+    createFeatureCard(card) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'feature-card';
+        cardDiv.onclick = () => this.openFeature(card.main_url);
+        
+        cardDiv.innerHTML = `
+            <div class="feature-card-header">
+                <div class="feature-card-icon">${card.icon}</div>
+                <h3>${card.title}</h3>
+            </div>
+            <div class="feature-card-description">
+                ${card.description}
+            </div>
+            <div class="feature-card-footer">
+                <span class="feature-card-status ${card.status}">${card.status}</span>
+                <div class="feature-card-actions">
+                    ${card.settings_url ? `<a href="${card.settings_url}" class="btn-small" onclick="event.stopPropagation()">⚙️ Settings</a>` : ''}
+                </div>
+            </div>
+        `;
+        
+        return cardDiv;
+    }
+    
+    openFeature(url) {
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
     // Plugin Management
     async loadPlugins() {
         try {
@@ -536,7 +591,6 @@ class RigWebClient {
                 </div>
                 <p><strong>Running:</strong> ${plugin.running ? 'Yes' : 'No'}</p>
                 <p><strong>External Service:</strong> ${plugin.external_service ? 'Yes' : 'No'}</p>
-                ${plugin.has_web_interface ? `<a href="${plugin.web_routes}" class="plugin-link" target="_blank">Open Plugin Interface</a>` : ''}
                 <div class="config-controls">
                     <button class="btn ${plugin.enabled ? 'btn-secondary' : 'btn-success'}" 
                             onclick="rigClient.togglePlugin('${plugin.key}', ${!plugin.enabled})">
@@ -548,6 +602,7 @@ class RigWebClient {
                             ${plugin.running ? 'Stop' : 'Start'}
                         </button>
                     ` : ''}
+                    <a href="/plugins/${plugin.key}/settings/" class="btn btn-primary" style="text-decoration: none; color: white;">⚙️ Settings</a>
                 </div>
             `;
             container.appendChild(item);
@@ -661,9 +716,146 @@ class RigWebClient {
         }
     }
     
-    editRadio(radioId) {
-        // TODO: Implement radio editing modal
-        this.log(`Edit radio ${radioId} - not implemented yet`, 'warning');
+    async editRadio(radioId) {
+        try {
+            // Get current radio configuration and driver schema
+            const [configResponse, driversResponse] = await Promise.all([
+                this.apiCall(`/config/radios`),
+                this.apiCall(`/config/radio-drivers`)
+            ]);
+            
+            const radioConfig = configResponse.radios.find(r => r.id === radioId);
+            if (!radioConfig) {
+                this.log(`Radio ${radioId} not found`, 'error');
+                return;
+            }
+            
+            const driver = driversResponse.drivers.find(d => d.type === radioConfig.driver_type);
+            const configSchema = driver?.config_schema || {};
+            
+            this.showEditRadioModal(radioConfig, configSchema);
+            
+        } catch (error) {
+            this.log(`Failed to load radio configuration: ${error.message}`, 'error');
+        }
+    }
+    
+    showEditRadioModal(radioConfig, configSchema) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('edit-radio-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'edit-radio-modal';
+            modal.style.cssText = `
+                display: none; 
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                height: 100%; 
+                background: rgba(0,0,0,0.8); 
+                z-index: 1000;
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Build form based on config schema
+        let configFields = '';
+        if (Object.keys(configSchema).length > 0) {
+            configFields = '<h4>Driver Configuration</h4>';
+            for (const [key, field] of Object.entries(configSchema)) {
+                const currentValue = radioConfig.config[key] || field.default || '';
+                configFields += `
+                    <div class="form-group">
+                        <label>${field.title || key}:</label>
+                        <input type="${field.type === 'number' ? 'number' : 'text'}" 
+                               id="config-${key}" 
+                               value="${currentValue}" 
+                               placeholder="${field.description || ''}"
+                               ${field.required ? 'required' : ''}>
+                        ${field.description ? `<small>${field.description}</small>` : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        modal.innerHTML = `
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c2c2c; padding: 2rem; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90%; overflow-y: auto; color: #e0e0e0;">
+                <h2>Edit Radio: ${radioConfig.name}</h2>
+                
+                <div class="form-group">
+                    <label>Radio Name:</label>
+                    <input type="text" id="edit-radio-name" value="${radioConfig.name}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Driver Type:</label>
+                    <input type="text" value="${radioConfig.driver_type}" disabled style="background-color: #444; color: #888;">
+                    <small>Driver type cannot be changed after creation</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Enabled:</label>
+                    <select id="edit-radio-enabled">
+                        <option value="true" ${radioConfig.enabled ? 'selected' : ''}>Yes</option>
+                        <option value="false" ${!radioConfig.enabled ? 'selected' : ''}>No</option>
+                    </select>
+                </div>
+                
+                ${configFields}
+                
+                <div class="form-actions" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="rigClient.saveRadioEdit('${radioConfig.id}', ${JSON.stringify(configSchema).replace(/"/g, '&quot;')})">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="rigClient.closeEditRadioModal()">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+    }
+    
+    async saveRadioEdit(radioId, configSchema) {
+        try {
+            const name = document.getElementById('edit-radio-name').value.trim();
+            const enabled = document.getElementById('edit-radio-enabled').value === 'true';
+            
+            if (!name) {
+                this.log('Radio name is required', 'error');
+                return;
+            }
+            
+            // Collect config values
+            const config = {};
+            for (const key of Object.keys(configSchema)) {
+                const input = document.getElementById(`config-${key}`);
+                if (input) {
+                    config[key] = input.value;
+                }
+            }
+            
+            const response = await this.apiCall(`/config/radios/${radioId}`, 'PUT', {
+                name: name,
+                enabled: enabled,
+                config: config
+            });
+            
+            this.log(`Radio ${radioId} updated successfully`, 'success');
+            this.closeEditRadioModal();
+            
+            // Reload configurations and radio list
+            await this.loadRadioConfigs();
+            await this.loadRadios();
+            
+        } catch (error) {
+            this.log(`Failed to update radio: ${error.message}`, 'error');
+        }
+    }
+    
+    closeEditRadioModal() {
+        const modal = document.getElementById('edit-radio-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 }
 

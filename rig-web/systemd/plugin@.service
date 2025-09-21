@@ -17,9 +17,18 @@ WorkingDirectory=/opt/rig-web
 Environment=PYTHONPATH=/opt/rig-web
 Environment=PLUGIN_NAME=%i
 
-# Main command - runs the plugin externally
-# TODO: Implement external plugin runner script
-ExecStart=/opt/rig-web/venv/bin/python -m plugins.%i
+# Main command - runs the plugin daemon externally
+# Format: plugin_name or plugin_name-rig_id
+# Examples: 
+#   rig-plugin@scheduled_transmitter.service (single instance)
+#   rig-plugin@scheduled_transmitter-rig1.service (per-rig instance)
+ExecStart=/bin/bash -c 'if [[ "%i" == *-* ]]; then \
+    PLUGIN_NAME=$(echo "%i" | cut -d"-" -f1); \
+    RIG_ID=$(echo "%i" | cut -d"-" -f2-); \
+    exec /opt/rig-web/venv/bin/python /opt/rig-web/plugins/$PLUGIN_NAME/daemon.py --config /opt/rig-web/config/plugins/$PLUGIN_NAME/$RIG_ID.toml --rig-id $RIG_ID; \
+else \
+    exec /opt/rig-web/venv/bin/python /opt/rig-web/plugins/%i/daemon.py --config /opt/rig-web/config/plugins/%i/plugin.toml; \
+fi'
 
 # Restart configuration
 Restart=always

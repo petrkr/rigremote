@@ -324,8 +324,8 @@ class ConfigManager:
         return [radio for radio in self.config.radios.instances if radio.enabled]
     
     def get_plugin_config(self, plugin_key: str) -> Dict[str, Any]:
-        """Get configuration for specific plugin."""
-        plugin_config_file = os.path.join(self.config.plugins.config_dir, f"{plugin_key}.toml")
+        """Get configuration for specific plugin (editor configuration)."""
+        plugin_config_file = os.path.join(self.config.plugins.config_dir, plugin_key, "plugin.toml")
         
         if os.path.exists(plugin_config_file):
             try:
@@ -336,18 +336,19 @@ class ConfigManager:
                 logger.error(f"Error loading plugin config {plugin_config_file}: {e}")
                 return {}
         else:
-            logger.warning(f"Plugin config file not found: {plugin_config_file}")
+            logger.debug(f"Plugin config file not found: {plugin_config_file}")
             return {}
     
     def save_plugin_config(self, plugin_key: str, config_data: Dict[str, Any]):
-        """Save configuration for specific plugin."""
+        """Save configuration for specific plugin (editor configuration)."""
         import toml
         from datetime import datetime
         
-        # Ensure plugins config directory exists
-        os.makedirs(self.config.plugins.config_dir, exist_ok=True)
+        # Ensure plugin config directory exists
+        plugin_dir = os.path.join(self.config.plugins.config_dir, plugin_key)
+        os.makedirs(plugin_dir, exist_ok=True)
         
-        plugin_config_file = os.path.join(self.config.plugins.config_dir, f"{plugin_key}.toml")
+        plugin_config_file = os.path.join(plugin_dir, "plugin.toml")
         
         try:
             # Create backup if file exists
@@ -366,14 +367,74 @@ class ConfigManager:
             logger.error(f"Failed to save plugin configuration {plugin_config_file}: {e}")
             raise
     
+    def get_daemon_config(self, plugin_key: str, rig_id: str) -> Dict[str, Any]:
+        """Get daemon configuration for specific plugin and rig."""
+        daemon_config_file = os.path.join(self.config.plugins.config_dir, plugin_key, f"{rig_id}.toml")
+        
+        if os.path.exists(daemon_config_file):
+            try:
+                with open(daemon_config_file, 'rb') as f:
+                    daemon_data = tomllib.load(f)
+                return daemon_data
+            except Exception as e:
+                logger.error(f"Error loading daemon config {daemon_config_file}: {e}")
+                return {}
+        else:
+            logger.debug(f"Daemon config file not found: {daemon_config_file}")
+            return {}
+    
+    def save_daemon_config(self, plugin_key: str, rig_id: str, config_data: Dict[str, Any]):
+        """Save daemon configuration for specific plugin and rig."""
+        import toml
+        from datetime import datetime
+        
+        # Ensure plugin config directory exists
+        plugin_dir = os.path.join(self.config.plugins.config_dir, plugin_key)
+        os.makedirs(plugin_dir, exist_ok=True)
+        
+        daemon_config_file = os.path.join(plugin_dir, f"{rig_id}.toml")
+        
+        try:
+            # Create backup if file exists
+            if os.path.exists(daemon_config_file):
+                backup_path = f"{daemon_config_file}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                shutil.copy2(daemon_config_file, backup_path)
+                logger.info(f"Created daemon config backup: {backup_path}")
+            
+            # Write configuration
+            with open(daemon_config_file, 'w', encoding='utf-8') as f:
+                toml.dump(config_data, f)
+            
+            logger.info(f"Daemon configuration saved: {daemon_config_file}")
+            
+        except Exception as e:
+            logger.error(f"Failed to save daemon configuration {daemon_config_file}: {e}")
+            raise
+    
+    def list_daemon_configs(self, plugin_key: str) -> List[str]:
+        """List available daemon configurations for a plugin (returns rig IDs)."""
+        plugin_dir = os.path.join(self.config.plugins.config_dir, plugin_key)
+        daemon_configs = []
+        
+        if os.path.exists(plugin_dir):
+            for file in os.listdir(plugin_dir):
+                if file.endswith('.toml') and file != 'plugin.toml' and not file.startswith('.'):
+                    rig_id = file[:-5]  # Remove .toml extension
+                    daemon_configs.append(rig_id)
+        
+        return daemon_configs
+    
     def list_plugin_configs(self) -> List[str]:
-        """List available plugin configuration files."""
+        """List available plugin configuration directories."""
         plugin_configs = []
         if os.path.exists(self.config.plugins.config_dir):
-            for file in os.listdir(self.config.plugins.config_dir):
-                if file.endswith('.toml') and not file.startswith('.'):
-                    plugin_key = file[:-5]  # Remove .toml extension
-                    plugin_configs.append(plugin_key)
+            for item in os.listdir(self.config.plugins.config_dir):
+                item_path = os.path.join(self.config.plugins.config_dir, item)
+                if os.path.isdir(item_path) and not item.startswith('.'):
+                    # Check if plugin.toml exists in the directory
+                    plugin_toml = os.path.join(item_path, 'plugin.toml')
+                    if os.path.exists(plugin_toml):
+                        plugin_configs.append(item)
         return plugin_configs
     
     def reload(self):

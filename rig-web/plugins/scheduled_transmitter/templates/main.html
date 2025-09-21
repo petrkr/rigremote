@@ -243,7 +243,8 @@
         
         <div class="tabs">
             <button class="tab-button active" onclick="showTab('folders')">Transmission Sets</button>
-            <button class="tab-button" onclick="showTab('config')">Configuration</button>
+            <button class="tab-button" onclick="showTab('config')">Plugin Config</button>
+            <button class="tab-button" onclick="showTab('daemon')">Daemon Config</button>
         </div>
         
         <!-- Folders/Transmission Sets Tab -->
@@ -272,13 +273,79 @@
                     <input type="text" id="transmission-path" value="{{ config.get('transmission_path', '/mnt/data/sstv') }}">
                 </div>
 
-                <div class="config-item">
-                    <label>Check Interval (seconds):</label>
-                    <input type="number" id="check-interval" value="{{ config.get('check_interval', 60) }}">
-                </div>
 
                 <div class="form-actions">
                     <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Daemon Configuration Tab -->
+        <div id="daemon-tab" class="tab-content">
+            <div class="section">
+                <h2>Daemon Configuration (Per-Rig)</h2>
+                
+                <div class="config-item">
+                    <label>Select Rig:</label>
+                    <select id="rig-select" onchange="loadDaemonConfig()">
+                        <option value="">-- Select Rig --</option>
+                    </select>
+                </div>
+                
+                <div id="daemon-config-section" style="display: none;">
+                    <h3 id="daemon-config-title">Daemon Configuration for Rig</h3>
+                    
+                    <div class="config-item">
+                        <label>Enabled:</label>
+                        <select id="daemon-enabled">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Transmission Sets Path:</label>
+                        <input type="text" id="daemon-transmission-path" placeholder="/mnt/data/sstv">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Check Interval (seconds):</label>
+                        <input type="number" id="daemon-check-interval" value="60">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Audio Device Name:</label>
+                        <input type="text" id="daemon-audio-device" placeholder="pulse">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Rig Address:</label>
+                        <input type="text" id="daemon-rig-address" placeholder="localhost:4532">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Signal Power Threshold (dBm):</label>
+                        <input type="number" id="daemon-signal-threshold" value="-80">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Max Waiting Time (seconds):</label>
+                        <input type="number" id="daemon-max-wait" value="300">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Log Level:</label>
+                        <select id="daemon-log-level">
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="saveDaemonConfig()">Save Daemon Configuration</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,6 +397,8 @@
             
             if (tabName === 'folders') {
                 loadFolders();
+            } else if (tabName === 'daemon') {
+                loadRigList();
             }
         }
         
@@ -657,7 +726,6 @@
             const config = {
                 settings: {
                     transmission_path: document.getElementById('transmission-path').value,
-                    check_interval: parseInt(document.getElementById('check-interval').value),
                 }
             };
             
@@ -684,6 +752,111 @@
         
         function closeAudioModal() {
             document.getElementById('audio-modal').style.display = 'none';
+        }
+        
+        async function loadRigList() {
+            try {
+                const response = await fetch('/api/radios');
+                const data = await response.json();
+                
+                const select = document.getElementById('rig-select');
+                select.innerHTML = '<option value="">-- Select Rig --</option>';
+                
+                data.radios.forEach(radio => {
+                    const option = document.createElement('option');
+                    option.value = radio.id;
+                    option.textContent = `${radio.name} (${radio.id})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load rig list:', error);
+            }
+        }
+        
+        async function loadDaemonConfig() {
+            const rigId = document.getElementById('rig-select').value;
+            const configSection = document.getElementById('daemon-config-section');
+            const configTitle = document.getElementById('daemon-config-title');
+            
+            if (!rigId) {
+                configSection.style.display = 'none';
+                return;
+            }
+            
+            configTitle.textContent = `Daemon Configuration for ${rigId}`;
+            configSection.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/daemon-config/${rigId}`);
+                const data = await response.json();
+                
+                // Fill form with existing config or defaults
+                const config = data.config;
+                document.getElementById('daemon-enabled').value = config.daemon?.enabled ? 'true' : 'false';
+                document.getElementById('daemon-transmission-path').value = config.daemon?.transmission_sets_path || '/mnt/data/sstv';
+                document.getElementById('daemon-check-interval').value = config.daemon?.check_interval || 60;
+                document.getElementById('daemon-audio-device').value = config.daemon?.audio_device_name || 'pulse';
+                document.getElementById('daemon-rig-address').value = config.rig?.address || 'localhost:4532';
+                document.getElementById('daemon-signal-threshold').value = config.rig?.signal_power_threshold || -80;
+                document.getElementById('daemon-max-wait').value = config.rig?.max_waiting_time || 300;
+                document.getElementById('daemon-log-level').value = config.logging?.level || 'INFO';
+                
+            } catch (error) {
+                console.error('Failed to load daemon config:', error);
+                // Set defaults if config doesn't exist
+                document.getElementById('daemon-enabled').value = 'false';
+                document.getElementById('daemon-transmission-path').value = '/mnt/data/sstv';
+                document.getElementById('daemon-check-interval').value = '60';
+                document.getElementById('daemon-audio-device').value = 'pulse';
+                document.getElementById('daemon-rig-address').value = 'localhost:4532';
+                document.getElementById('daemon-signal-threshold').value = '-80';
+                document.getElementById('daemon-max-wait').value = '300';
+                document.getElementById('daemon-log-level').value = 'INFO';
+            }
+        }
+        
+        async function saveDaemonConfig() {
+            const rigId = document.getElementById('rig-select').value;
+            if (!rigId) {
+                alert('Please select a rig first');
+                return;
+            }
+            
+            const config = {
+                daemon: {
+                    enabled: document.getElementById('daemon-enabled').value === 'true',
+                    rig_id: rigId,
+                    transmission_sets_path: document.getElementById('daemon-transmission-path').value,
+                    check_interval: parseInt(document.getElementById('daemon-check-interval').value),
+                    audio_device_name: document.getElementById('daemon-audio-device').value
+                },
+                rig: {
+                    address: document.getElementById('daemon-rig-address').value,
+                    signal_power_threshold: parseInt(document.getElementById('daemon-signal-threshold').value),
+                    max_waiting_time: parseInt(document.getElementById('daemon-max-wait').value)
+                },
+                logging: {
+                    level: document.getElementById('daemon-log-level').value,
+                    file: `/var/log/rig-web/scheduled_transmitter_${rigId}.log`
+                }
+            };
+            
+            try {
+                const response = await fetch(`/plugins/scheduled_transmitter/daemon-config/${rigId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                
+                if (response.ok) {
+                    alert('Daemon configuration saved successfully!');
+                } else {
+                    alert('Failed to save daemon configuration');
+                }
+            } catch (error) {
+                console.error('Failed to save daemon configuration:', error);
+                alert('Failed to save daemon configuration');
+            }
         }
         
         // Initialize

@@ -325,6 +325,116 @@ section h3 {
     gap: 1rem;
 }
 
+/* Features Panel */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border: 2px solid #3498db;
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+    border-color: #5dade2;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12, #e74c3c);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+}
+
+.feature-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.feature-card-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.feature-card h3 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.feature-card-description {
+    color: #bdc3c7;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.feature-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.feature-card-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.feature-card-status.enabled {
+    background: #27ae60;
+    color: white;
+}
+
+.feature-card-status.disabled {
+    background: #95a5a6;
+    color: white;
+}
+
+.feature-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.feature-card-actions .btn-small {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    background: rgba(52, 152, 219, 0.2);
+    border: 1px solid #3498db;
+    color: #3498db;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.feature-card-actions .btn-small:hover {
+    background: #3498db;
+    color: white;
+}
+
 .plugin-card {
     background-color: #333;
     padding: 1.5rem;
@@ -373,6 +483,26 @@ section h3 {
 .plugin-controls .stop {
     background-color: #e74c3c;
     color: white;
+}
+
+/* Button styling for links */
+a.btn {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+a.btn:hover {
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
 }
 
 /* Configuration Panel */

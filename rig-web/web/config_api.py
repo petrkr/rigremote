@@ -64,6 +64,23 @@ def add_radio_config():
             "available_drivers": available_drivers
         }), 400
     
+    # Get default config from driver schema
+    driver_class = registry.radio_drivers[data['driver_type']]
+    default_config = {}
+    if hasattr(driver_class, 'get_config_schema'):
+        try:
+            schema = driver_class.get_config_schema()
+            # Extract default values from schema
+            for key, field in schema.items():
+                if 'default' in field:
+                    default_config[key] = field['default']
+        except Exception as e:
+            logger.warning(f"Failed to get default config for {data['driver_type']}: {e}")
+    
+    # Merge provided config with defaults
+    final_config = default_config.copy()
+    final_config.update(data.get('config', {}))
+    
     # Create new radio config
     from core.config import RadioInstanceConfig
     new_radio = RadioInstanceConfig(
@@ -71,7 +88,7 @@ def add_radio_config():
         name=data['name'],
         driver_type=data['driver_type'],
         enabled=data.get('enabled', True),
-        config=data.get('config', {})
+        config=final_config
     )
     
     # Add to configuration

@@ -199,6 +199,29 @@ def list_plugins():
     return jsonify({"plugins": plugins})
 
 
+@api_bp.route('/plugin-cards', methods=['GET'])
+def get_plugin_cards():
+    """Get plugin card information for main page."""
+    registry = get_registry()
+    cards = []
+    
+    for plugin_key in registry.list_plugins():
+        plugin = registry.get_plugin(plugin_key)
+        if plugin and plugin.enabled and plugin.has_main_interface():
+            try:
+                card_info = plugin.get_card_info()
+                card_info.update({
+                    "key": plugin.key,
+                    "main_url": plugin.get_main_routes(),
+                    "settings_url": plugin.get_settings_routes() if plugin.has_settings_interface() else None
+                })
+                cards.append(card_info)
+            except Exception as e:
+                logger.error(f"Failed to get card info for plugin {plugin_key}: {e}")
+    
+    return jsonify({"cards": cards})
+
+
 @api_bp.route('/plugins/<plugin_key>/start', methods=['POST'])
 def start_plugin(plugin_key: str):
     """Start a plugin."""
