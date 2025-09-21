@@ -155,11 +155,6 @@ class RigWebClient {
         }
     }
     
-    async refreshRadios() {
-        this.log('Refreshing radio list...', 'info');
-        await this.loadRadios();
-    }
-    
     selectRadio() {
         const select = document.getElementById('radio-select');
         const radioId = select.value;
@@ -862,10 +857,6 @@ class RigWebClient {
 // Global functions for HTML onclick handlers
 function selectRadio() {
     rigClient.selectRadio();
-}
-
-function refreshRadios() {
-    rigClient.refreshRadios();
 }
 
 function setFrequency() {

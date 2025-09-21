@@ -629,7 +629,6 @@ class ScheduledTransmitter(PluginModule):
                 <select id="rig-selector" onchange="loadSelectedRigConfig()">
                     <option value="">-- Choose Radio --</option>
                 </select>
-                <button type="button" class="btn btn-secondary" onclick="loadRigList()" style="margin-left: 0.5rem;">🔄 Refresh</button>
             </div>
             
             <div id="selected-rig-config" style="display: none;">
