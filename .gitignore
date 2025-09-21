@@ -9,6 +9,8 @@ venv/
 config.yaml
 schedule.csv
 
+settings.toml
+
 # Flask
 instance/
 .webassets-cache/
