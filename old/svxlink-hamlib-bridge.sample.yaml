@@ -1,0 +1,13 @@
+svxlink:
+  radios:
+    - id: FT991
+      type: hamlibnet
+      host: 127.0.0.1
+      ptt: /tmp/svxlink.ptt.ft991
+      sql: /tmp/svxlink.sql.ft991
+
+
+    - id: Demo1
+      type: fake
+      ptt: /tmp/svxlink.ptt.demo1
+      sql: /tmp/svxlink.sql.demo1

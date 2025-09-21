@@ -1,0 +1,56 @@
+# Systemd service template for RIG Remote Control plugins
+# Usage: systemctl enable rig-plugin@scheduled_transmitter.service
+#        systemctl start rig-plugin@scheduled_transmitter.service
+#
+# The %i parameter will be replaced with the plugin name (e.g., "scheduled_transmitter")
+
+[Unit]
+Description=RIG Remote Control Plugin: %i
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=rigremote
+Group=rigremote
+WorkingDirectory=/opt/rig-web
+Environment=PYTHONPATH=/opt/rig-web
+Environment=PLUGIN_NAME=%i
+
+# Main command - runs the plugin externally
+# TODO: Implement external plugin runner script
+ExecStart=/opt/rig-web/venv/bin/python -m plugins.%i
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=0
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=50%
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/rig-web/config /tmp
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rig-plugin-%i
+
+[Install]
+WantedBy=multi-user.target
+
+# Installation instructions:
+# 1. Copy this file to /etc/systemd/system/rig-plugin@.service
+# 2. Create user: sudo useradd -r -s /bin/false rigremote
+# 3. Set up permissions on /opt/rig-web directory
+# 4. Enable specific plugins:
+#    sudo systemctl enable rig-plugin@scheduled_transmitter.service
+#    sudo systemctl start rig-plugin@scheduled_transmitter.service
+# 5. Check status:
+#    sudo systemctl status rig-plugin@scheduled_transmitter.service

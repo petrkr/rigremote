@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Azimutové čáry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      html,
+      body,
+      #map {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #info {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        font-family: sans-serif;
+        border-radius: 5px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        max-width: 200px;
+      }
+      #info h3 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+      }
+      #info ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="info">
+      <h3>Azimuty</h3>
+      <ul id="azimuthList"></ul>
+      <button onclick="exportSegmentsToURL()">Export do odkazu</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const map = L.map("map").setView([49.8, 15.5], 7); // ČR
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+      }).addTo(map);
+
+      const blueIcon = L.icon({
+        iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png",
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      });
+
+      const greenIcon = L.icon({
+        iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png",
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      });
+
+      let drawing = false;
+      let tempStart = null;
+      let tempEnd = null;
+      let tempLine = null;
+      let tempListItem = null;
+      let tempText = null;
+
+      const segments = [];
+      const azimuthList = document.getElementById("azimuthList");
+
+      function computeAzimuth(p1, p2) {
+        const lat1 = (p1.lat * Math.PI) / 180;
+        const lat2 = (p2.lat * Math.PI) / 180;
+        const dLon = ((p2.lng - p1.lng) * Math.PI) / 180;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x =
+          Math.cos(lat1) * Math.sin(lat2) -
+          Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        let brng = (Math.atan2(y, x) * 180) / Math.PI;
+        return (brng + 360) % 360;
+      }
+
+      function finalizeSegment() {
+        const startLatLng = tempStart.getLatLng();
+        const endLatLng = tempEnd.getLatLng();
+
+        const start = L.marker(startLatLng, {
+          draggable: true,
+          icon: blueIcon,
+        }).addTo(map);
+        const end = L.marker(endLatLng, {
+          draggable: true,
+          icon: greenIcon,
+        }).addTo(map);
+        const line = L.polyline([startLatLng, endLatLng], {
+          color: "red",
+        }).addTo(map);
+
+        // Přesuneme DOM prvky do lokálních proměnných
+        const listItem = tempListItem;
+        const text = tempText;
+        const delBtn = listItem.querySelector("button");
+
+        function update() {
+          const latlngs = [start.getLatLng(), end.getLatLng()];
+          line.setLatLngs(latlngs);
+          const az = computeAzimuth(latlngs[0], latlngs[1]);
+          text.textContent = `${az.toFixed(1)}°`;
+        }
+
+        start.on("drag", update);
+        end.on("drag", update);
+        update();
+
+        delBtn.addEventListener("click", () => {
+          if (confirm("Opravdu smazat tuto čáru?")) {
+            map.removeLayer(start);
+            map.removeLayer(end);
+            map.removeLayer(line);
+            listItem.remove();
+          }
+        });
+
+        segments.push({ start, end, line, listItem });
+
+        // Smazat dočasné prvky z mapy
+        map.removeLayer(tempStart);
+        map.removeLayer(tempEnd);
+        map.removeLayer(tempLine);
+
+        // Vymazat globální stav
+        tempStart = null;
+        tempEnd = null;
+        tempLine = null;
+        tempListItem = null;
+        tempText = null;
+        drawing = false;
+      }
+
+      function fitMapToSegments() {
+        if (segments.length === 0) return;
+
+        const bounds = L.latLngBounds([]);
+
+        for (const s of segments) {
+          bounds.extend(s.start.getLatLng());
+          bounds.extend(s.end.getLatLng());
+        }
+
+        map.fitBounds(bounds, {
+          padding: [20, 20],
+        });
+      }
+
+      function exportSegmentsToURL() {
+        const segmentStrings = segments.map((s) => {
+          const p1 = s.start.getLatLng();
+          const p2 = s.end.getLatLng();
+          return `${p1.lat.toFixed(6)},${p1.lng.toFixed(6)},${p2.lat.toFixed(6)},${p2.lng.toFixed(6)}`;
+        });
+        const param = encodeURIComponent(segmentStrings.join(";"));
+        const url = `${location.origin}${location.pathname}?segments=${param}`;
+        prompt("Odkaz s exportem:", url);
+      }
+
+      function loadSegmentsFromURL() {
+        const params = new URLSearchParams(location.search);
+        const raw = params.get("segments");
+        if (!raw) return;
+        const parts = raw.split(";");
+        for (const seg of parts) {
+          const [lat1, lon1, lat2, lon2] = seg.split(",").map(Number);
+          if ([lat1, lon1, lat2, lon2].some(isNaN)) continue;
+
+          // vytvořit marker a segment jako po druhém kliknutí
+          const start = L.marker([lat1, lon1], {
+            draggable: true,
+            icon: blueIcon,
+          }).addTo(map);
+          const end = L.marker([lat2, lon2], {
+            draggable: true,
+            icon: greenIcon,
+          }).addTo(map);
+          const line = L.polyline(
+            [
+              [lat1, lon1],
+              [lat2, lon2],
+            ],
+            { color: "red" },
+          ).addTo(map);
+
+          const listItem = document.createElement("li");
+          const text = document.createElement("span");
+          const delBtn = document.createElement("button");
+
+          delBtn.textContent = "×";
+          delBtn.style.marginLeft = "10px";
+          delBtn.style.cursor = "pointer";
+          delBtn.style.background = "transparent";
+          delBtn.style.border = "none";
+          delBtn.style.fontSize = "16px";
+          delBtn.style.color = "darkred";
+
+          listItem.appendChild(text);
+          listItem.appendChild(delBtn);
+          azimuthList.appendChild(listItem);
+
+          function update() {
+            const latlngs = [start.getLatLng(), end.getLatLng()];
+            line.setLatLngs(latlngs);
+            const az = computeAzimuth(latlngs[0], latlngs[1]);
+            text.textContent = `${az.toFixed(1)}°`;
+          }
+
+          start.on("drag", update);
+          end.on("drag", update);
+          update();
+
+          delBtn.addEventListener("click", () => {
+            if (confirm("Opravdu smazat tuto čáru?")) {
+              map.removeLayer(start);
+              map.removeLayer(end);
+              map.removeLayer(line);
+              listItem.remove();
+
+              // najdeme segment v poli a odstraníme ho
+              const index = segments.findIndex((s) => s.line === line);
+              if (index !== -1) {
+                segments.splice(index, 1);
+              }
+            }
+          });
+          segments.push({ start, end, line, listItem });
+        }
+
+        fitMapToSegments();
+      }
+
+      map.on("click", function (e) {
+        if (!drawing) {
+          drawing = true;
+
+          // vytvoření bodů a čáry
+          tempStart = L.marker(e.latlng, { icon: blueIcon }).addTo(map);
+          tempEnd = L.marker(e.latlng, { icon: greenIcon }).addTo(map);
+          tempLine = L.polyline([e.latlng, e.latlng], { color: "red" }).addTo(
+            map,
+          );
+
+          // vytvoření položky v seznamu
+          tempListItem = document.createElement("li");
+          tempText = document.createElement("span");
+          const delBtn = document.createElement("button");
+
+          delBtn.textContent = "×";
+          delBtn.style.marginLeft = "10px";
+          delBtn.style.cursor = "pointer";
+          delBtn.style.background = "transparent";
+          delBtn.style.border = "none";
+          delBtn.style.fontSize = "16px";
+          delBtn.style.color = "darkred";
+
+          tempListItem.appendChild(tempText);
+          tempListItem.appendChild(delBtn);
+          azimuthList.appendChild(tempListItem);
+        } else {
+          finalizeSegment();
+        }
+      });
+
+      map.on("mousemove", function (e) {
+        if (drawing && tempStart && tempEnd && tempLine && tempText) {
+          tempEnd.setLatLng(e.latlng);
+          tempLine.setLatLngs([tempStart.getLatLng(), e.latlng]);
+
+          const az = computeAzimuth(tempStart.getLatLng(), e.latlng);
+          tempText.textContent = `${az.toFixed(1)}°`;
+        }
+      });
+
+      loadSegmentsFromURL();
+    </script>
+  </body>
+</html>
