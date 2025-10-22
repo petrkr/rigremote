@@ -32,20 +32,20 @@ class ScheduleFileHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
-            log_message(f"Schedule file modified: {event.src_path}", "debug")
+            log_message(f"File system event [MODIFY]: {event.src_path}", "debug")
             self.reload_needed = True
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
-            log_message(f"Schedule file created: {event.src_path}", "debug")
+            log_message(f"File system event [CREATE]: {event.src_path}", "debug")
             self.reload_needed = True
         elif event.is_directory:
-            log_message(f"New folder detected: {event.src_path}", "debug")
+            log_message(f"File system event [CREATE DIR]: {event.src_path}", "debug")
             self.reload_needed = True
 
     def on_deleted(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
-            log_message(f"Schedule file deleted: {event.src_path}", "debug")
+            log_message(f"File system event [DELETE]: {event.src_path}", "debug")
             self.reload_needed = True
 
 
