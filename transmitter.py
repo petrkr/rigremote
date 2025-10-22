@@ -263,7 +263,7 @@ def main():
         sys.exit(1)
 
     if not os.path.exists(transmit_sets_path):
-        log_message(f"Error: Transmition directory '{transmit_sets_path}' does not exist.", "error")
+        log_message(f"Error: Transmission directory '{transmit_sets_path}' does not exist.", "error")
         sys.exit(1)
 
     rig = initialize_rig(global_settings['rig_address'])
