@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, jsonify
 from glob import glob
 import os
 import pandas as pd
+from datetime import datetime
+import time
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -138,6 +140,25 @@ def stream_audio(folder_name, file_name):
         return send_from_directory(directory=safe_folder_path, path=os.path.basename(safe_file_path), as_attachment=False)
     else:
         abort(404)  # File not found
+
+# API endpoint to get server time
+@app.route('/api/server_time')
+def get_server_time():
+    now = datetime.now()
+
+    # Get timezone information
+    timezone_name = time.tzname[time.daylight]
+    utc_offset = time.timezone if not time.daylight else time.altzone
+    utc_offset_hours = -utc_offset / 3600
+
+    return jsonify({
+        'date': now.strftime('%Y-%m-%d'),
+        'time': now.strftime('%H:%M:%S'),
+        'datetime': now.strftime('%Y-%m-%d %H:%M:%S'),
+        'timezone': timezone_name,
+        'utc_offset': f'UTC{utc_offset_hours:+.1f}',
+        'timestamp': now.timestamp()
+    })
 
 
 if __name__ == '__main__':

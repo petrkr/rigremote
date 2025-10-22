@@ -11,6 +11,27 @@
 </head>
 <body>
     <h1>Edit Schedule - {{ folder_name }}</h1>
+
+    <!-- Server Time Display -->
+    <div id="server-time-container" style="margin-bottom: 20px;">
+        <table id="server-time-table" style="border-collapse: collapse; background-color: #f0f0f0;">
+            <thead>
+                <tr>
+                    <th style="padding: 8px; border: 1px solid #ccc;">Server Date</th>
+                    <th style="padding: 8px; border: 1px solid #ccc;">Server Time</th>
+                    <th style="padding: 8px; border: 1px solid #ccc;">Timezone</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="server-date" style="padding: 8px; border: 1px solid #ccc; text-align: center;">Loading...</td>
+                    <td id="server-time" style="padding: 8px; border: 1px solid #ccc; text-align: center;">Loading...</td>
+                    <td id="server-timezone" style="padding: 8px; border: 1px solid #ccc; text-align: center;">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <form id="schedule-form" method="post">
         <table id="schedule-table">
             <thead>
@@ -63,6 +84,60 @@
 
     <script>
         $(document).ready(function() {
+            // Server time synchronization
+            let serverTimeOffset = 0; // Offset between server and client in milliseconds
+            let lastSyncTime = 0; // Client timestamp of last sync
+
+            // Function to update displayed time
+            function updateDisplayedTime() {
+                const now = new Date();
+                const serverTime = new Date(now.getTime() + serverTimeOffset);
+
+                const dateStr = serverTime.toISOString().split('T')[0];
+                const timeStr = serverTime.toTimeString().split(' ')[0];
+
+                $('#server-date').text(dateStr);
+                $('#server-time').text(timeStr);
+            }
+
+            // Function to sync with server
+            function syncWithServer() {
+                const requestTime = Date.now();
+
+                $.ajax({
+                    url: '/api/server_time',
+                    type: 'GET',
+                    success: function(data) {
+                        const responseTime = Date.now();
+                        const roundTripTime = responseTime - requestTime;
+
+                        // Estimate server time accounting for network latency
+                        const serverTimestamp = data.timestamp * 1000 + (roundTripTime / 2);
+                        serverTimeOffset = serverTimestamp - responseTime;
+                        lastSyncTime = responseTime;
+
+                        // Update timezone info
+                        const timezoneText = data.timezone + ' (' + data.utc_offset + ')';
+                        $('#server-timezone').text(timezoneText);
+
+                        // Immediately update display
+                        updateDisplayedTime();
+                    },
+                    error: function() {
+                        $('#server-time').text('Error syncing');
+                    }
+                });
+            }
+
+            // Initial sync
+            syncWithServer();
+
+            // Sync with server every 10 seconds
+            setInterval(syncWithServer, 10000);
+
+            // Update displayed time every second
+            setInterval(updateDisplayedTime, 1000);
+
             $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
 
             // Add new row

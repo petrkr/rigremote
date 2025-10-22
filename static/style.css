@@ -44,3 +44,16 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+/* Server Time Table Styling */
+#server-time-table {
+    width: auto;
+    max-width: 600px;
+}
+
+#server-time-table td {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
