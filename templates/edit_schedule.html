@@ -138,7 +138,12 @@
             // Update displayed time every second
             setInterval(updateDisplayedTime, 1000);
 
-            $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
+            $(".datepicker").datepicker({
+                dateFormat: 'dd.mm.yy',
+                showButtonPanel: true,
+                changeMonth: true,
+                changeYear: true
+            });
 
             // Add new row
             $("#add-row-button").click(function() {
@@ -166,7 +171,12 @@
                     </tr>
                 `;
                 $("#schedule-table tbody").append(newRow);
-                $(".datepicker").datepicker({ dateFormat: 'dd.mm.yy' });
+                $(".datepicker").datepicker({
+                dateFormat: 'dd.mm.yy',
+                showButtonPanel: true,
+                changeMonth: true,
+                changeYear: true
+            });
             });
 
             // Delete row with confirmation
