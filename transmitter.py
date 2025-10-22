@@ -308,7 +308,7 @@ def main():
                 )
             else:
                 if now < start_datetime:
-                    log_message(f"Schedule not yet started: {start_datetime} (current time: {now})")
+                    log_message(f"Schedule not yet started: {start_datetime} (current time: {now})", level="debug")
                 else:
                     log_message(f"Schedule transmission window ended: {end_datetime} (current time: {now})")
 
