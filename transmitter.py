@@ -309,12 +309,10 @@ def main():
         for row in schedules:
             set_folder = row['set_folder']
             start_datetime = row['start_datetime']
+            end_datetime = row['end_datetime']
 
-            if now.date() != start_datetime.date():
-                log_message("This schedule is not active at the moment: " + str(row['start_datetime']))
-                continue
-
-            if now.time() >= start_datetime.time() and now.time() <= (datetime.combine(datetime.today(), start_datetime.time()) + timedelta(minutes=int(row['duration']))).time():
+            # Check if current time is within the transmission window
+            if now >= start_datetime and now < end_datetime:
                 log_message("Actual schedule:")
                 print_schedules([row])
                 transmit(
@@ -328,7 +326,10 @@ def main():
                     max_waiting_time=global_settings['max_waiting_time']
                 )
             else:
-                log_message("This schedule is not active at the moment. Time: " + str(row['start_datetime']))
+                if now < start_datetime:
+                    log_message(f"Schedule not yet started: {start_datetime} (current time: {now})")
+                else:
+                    log_message(f"Schedule transmission window ended: {end_datetime} (current time: {now})")
 
             if not running:
                 log_message("Interrupted by user.")
