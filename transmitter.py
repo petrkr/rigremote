@@ -169,6 +169,8 @@ def parse_mode(mode):
         return Hamlib.RIG_MODE_PKTLSB
     elif mode == "FM":
         return Hamlib.RIG_MODE_FM
+    elif mode == "FMN":
+        return Hamlib.RIG_MODE_FMN
     elif mode == "AM":
         return Hamlib.RIG_MODE_AM
     else:
