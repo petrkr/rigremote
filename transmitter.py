@@ -16,7 +16,37 @@ import Hamlib
 import pygame
 import pygame._sdl2.audio as sdl2_audio
 
+# File system monitoring
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
 running = True
+
+
+### File system event handler
+class ScheduleFileHandler(FileSystemEventHandler):
+    """Monitors schedule files and folders for changes"""
+    def __init__(self):
+        super().__init__()
+        self.reload_needed = False
+
+    def on_modified(self, event):
+        if not event.is_directory and event.src_path.endswith('schedule.csv'):
+            log_message(f"Schedule file modified: {event.src_path}", "debug")
+            self.reload_needed = True
+
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.endswith('schedule.csv'):
+            log_message(f"Schedule file created: {event.src_path}", "debug")
+            self.reload_needed = True
+        elif event.is_directory:
+            log_message(f"New folder detected: {event.src_path}", "debug")
+            self.reload_needed = True
+
+    def on_deleted(self, event):
+        if not event.is_directory and event.src_path.endswith('schedule.csv'):
+            log_message(f"Schedule file deleted: {event.src_path}", "debug")
+            self.reload_needed = True
 
 
 ### Audio playback functions
@@ -276,13 +306,32 @@ def main():
         log_message(f"Error initializing audio: {e}", level="error")
         sys.exit(1)
 
+    # Setup file watcher for schedule changes
+    file_handler = ScheduleFileHandler()
+    observer = Observer()
+    observer.schedule(file_handler, transmit_sets_path, recursive=True)
+    observer.start()
+    log_message("File watcher started for schedule monitoring", "info")
+
+    # Initial load of schedules
     schedules = []
+    try:
+        schedules = load_and_check_schedules(transmit_sets_path)
+    except Exception as e:
+        log_message(f"Error loading schedules: {e}", level="warning")
+
     while running:
         now = datetime.now()
-        try:
-            schedules = load_and_check_schedules(transmit_sets_path)
-        except Exception as e:
-            log_message(f"Error loading schedules: {e}", level="warning")
+
+        # Reload schedules if files changed
+        if file_handler.reload_needed:
+            log_message("Reloading schedules due to file changes", "info")
+            try:
+                schedules = load_and_check_schedules(transmit_sets_path)
+                file_handler.reload_needed = False
+            except Exception as e:
+                log_message(f"Error loading schedules: {e}", level="warning")
+                file_handler.reload_needed = False
 
         log_message("Current schedules:", "info")
         print_schedules(schedules)
@@ -323,6 +372,10 @@ def main():
 
             time.sleep(1)
 
+    # Cleanup
+    log_message("Stopping file watcher...", "info")
+    observer.stop()
+    observer.join()
     pygame.mixer.quit()
     rig.close()
     log_message("Service stopped gracefully.", level="info")
