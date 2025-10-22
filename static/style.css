@@ -57,3 +57,8 @@ a:hover {
     font-weight: bold;
     text-align: center;
 }
+
+/* Hide the "Done" button in datepicker, keep only "Today" */
+.ui-datepicker-close {
+    display: none !important;
+}
