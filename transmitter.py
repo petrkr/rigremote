@@ -171,8 +171,8 @@ def parse_schedule(file_path):
                 duration_minutes = int(row['Duration (minutes)'])
                 frequency = float(row['Frequency (MHz)'].replace(',', '.'))
                 mode = row['Mode']
-                power = int(row['Power (W)']) or 5
-                pause = int(row['Pause (sec)']) or 60
+                power = int(row['Power (W)']) if row['Power (W)'].strip() else 5
+                pause = int(row['Pause (sec)']) if row['Pause (sec)'].strip() else 60
 
                 start_datetime = datetime.combine(start_date, start_time)
                 end_datetime = start_datetime + timedelta(minutes=duration_minutes)
