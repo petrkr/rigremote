@@ -138,11 +138,29 @@
             // Update displayed time every second
             setInterval(updateDisplayedTime, 1000);
 
-            $(".datepicker").datepicker({
+            // Datepicker configuration
+            var datepickerConfig = {
                 dateFormat: 'dd.mm.yy',
                 showButtonPanel: true,
                 changeMonth: true,
                 changeYear: true
+            };
+
+            $(".datepicker").datepicker(datepickerConfig);
+
+            // Handle "Today" button click to select today's date and close
+            $(document).on('click', '.ui-datepicker-current', function() {
+                var input = $('.ui-datepicker').data('datepicker-input');
+                if (input) {
+                    var today = new Date();
+                    input.datepicker('setDate', today);
+                    input.datepicker('hide');
+                }
+            });
+
+            // Store reference to active datepicker input
+            $(document).on('focus', '.datepicker', function() {
+                $('.ui-datepicker').data('datepicker-input', $(this));
             });
 
             // Add new row
@@ -171,12 +189,7 @@
                     </tr>
                 `;
                 $("#schedule-table tbody").append(newRow);
-                $(".datepicker").datepicker({
-                dateFormat: 'dd.mm.yy',
-                showButtonPanel: true,
-                changeMonth: true,
-                changeYear: true
-            });
+                $(".datepicker").datepicker(datepickerConfig);
             });
 
             // Delete row with confirmation
