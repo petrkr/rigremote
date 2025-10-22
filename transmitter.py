@@ -4,6 +4,7 @@ import sys
 from glob import glob
 import time
 from datetime import datetime, timedelta
+import threading
 
 # Configuration
 import yaml
@@ -20,7 +21,9 @@ import pygame._sdl2.audio as sdl2_audio
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+# Global state
 running = True
+wake_up_event = threading.Event()
 
 
 ### File system event handler
@@ -34,19 +37,23 @@ class ScheduleFileHandler(FileSystemEventHandler):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [MODIFY]: {event.src_path}", "debug")
             self.reload_needed = True
+            wake_up_event.set()  # Wake up main loop immediately
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [CREATE]: {event.src_path}", "debug")
             self.reload_needed = True
+            wake_up_event.set()  # Wake up main loop immediately
         elif event.is_directory:
             log_message(f"File system event [CREATE DIR]: {event.src_path}", "debug")
             self.reload_needed = True
+            wake_up_event.set()  # Wake up main loop immediately
 
     def on_deleted(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [DELETE]: {event.src_path}", "debug")
             self.reload_needed = True
+            wake_up_event.set()  # Wake up main loop immediately
 
 
 ### Audio playback functions
@@ -171,6 +178,7 @@ def handle_shutdown(signum, frame):
     global running
     log_message("Received shutdown signal, stopping service...", level="warning")
     running = False
+    wake_up_event.set()  # Wake up main loop immediately to exit
 
 
 def parse_mode(mode):
@@ -321,9 +329,10 @@ def main():
         log_message(f"Error loading schedules: {e}", level="warning")
 
     while running:
+        wake_up_event.clear()  # Reset event at start of loop
         now = datetime.now()
 
-        # Reload schedules if files changed
+        # Reload schedules if files changed - do it immediately and continue
         if file_handler.reload_needed:
             log_message("Reloading schedules due to file changes", "info")
             try:
@@ -332,9 +341,14 @@ def main():
             except Exception as e:
                 log_message(f"Error loading schedules: {e}", level="warning")
                 file_handler.reload_needed = False
+            continue  # Immediately check schedules after reload
 
         log_message("Current schedules:", "info")
         print_schedules(schedules)
+
+        # Track if we transmitted and find next upcoming schedule
+        transmitted = False
+        next_schedule_time = None
 
         for row in schedules:
             set_folder = row['set_folder']
@@ -355,22 +369,35 @@ def main():
                     signal_power_threshold=global_settings['signal_power_threshold'],
                     max_waiting_time=global_settings['max_waiting_time']
                 )
+                transmitted = True
             else:
                 if now < start_datetime:
                     log_message(f"Schedule not yet started: {start_datetime} (current time: {now})", level="debug")
+                    # Track the nearest upcoming schedule
+                    if next_schedule_time is None or start_datetime < next_schedule_time:
+                        next_schedule_time = start_datetime
                 else:
-                    log_message(f"Schedule transmission window ended: {end_datetime} (current time: {now})")
+                    log_message(f"Schedule transmission window ended: {end_datetime} (current time: {now})", level="debug")
 
             if not running:
                 log_message("Interrupted by user.")
                 break
 
-        log_message(f"Waiting {global_settings['check_interval']} seconds for next loop...")
-        for _ in range(global_settings['check_interval']):
-            if not running:
-                break
+        # After transmission, immediately check again (pause was already in transmit())
+        if transmitted:
+            continue
 
-            time.sleep(1)
+        # Calculate smart sleep timeout
+        if next_schedule_time:
+            timeout = (next_schedule_time - datetime.now()).total_seconds()
+            timeout = max(1, min(timeout, global_settings['check_interval']))
+            log_message(f"Sleeping until next schedule at {next_schedule_time} (timeout: {int(timeout)}s)", "info")
+        else:
+            timeout = global_settings['check_interval']
+            log_message(f"No upcoming schedules, sleeping for {int(timeout)}s", "info")
+
+        # Event-driven wait - can be interrupted by file changes or shutdown signal
+        wake_up_event.wait(timeout=timeout)
 
     # Cleanup
     log_message("Stopping file watcher...", "info")
