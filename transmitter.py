@@ -137,25 +137,6 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
     log_message(f"Finished transmission of {set_folder}")
 
 
-def check_for_overlaps(schedule):
-    events = []
-    for row in schedule:
-        start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
-        duration = int(row['Duration (minutes)'])
-        end_time = (datetime.combine(datetime.today(), start_time) + timedelta(minutes=duration)).time()
-        events.append((start_time, end_time))
-    
-    # Sort events by start time
-    events.sort()
-    
-    for i in range(len(events) - 1):
-        current_end = events[i][1]
-        next_start = events[i + 1][0]
-        if current_end > next_start:
-            return True
-    return False
-
-
 def handle_shutdown(signum, frame):
     global running
     log_message("Received shutdown signal, stopping service...", level="warning")
