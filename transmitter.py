@@ -232,9 +232,6 @@ def parse_schedule(file_path):
                     log_message(f"Skipping invalid row: start date after end date", "debug")
                     continue
 
-                start_datetime = datetime.combine(start_date, start_time)
-                end_datetime = start_datetime + timedelta(minutes=duration_minutes)
-
                 # Create daily schedules within the date range
                 current_date = start_date
                 while current_date <= end_date:
