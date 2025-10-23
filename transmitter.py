@@ -409,11 +409,12 @@ def main():
         # Calculate smart sleep timeout
         if next_schedule_time:
             timeout = (next_schedule_time - datetime.now()).total_seconds()
-            timeout = max(1, min(timeout, global_settings['check_interval']))
+            timeout = max(1, timeout)  # Minimum 1s to prevent negative/zero timeout
             log_message(f"Sleeping until next schedule at {next_schedule_time} (timeout: {int(timeout)}s)", "info")
         else:
-            timeout = global_settings['check_interval']
-            log_message(f"No upcoming schedules, sleeping for {int(timeout)}s", "info")
+            # No upcoming schedules - wait indefinitely until file change or shutdown
+            timeout = None
+            log_message(f"No upcoming schedules, waiting for file changes or shutdown", "info")
 
         # Event-driven wait - can be interrupted by file changes or shutdown signal
         wake_up_event.wait(timeout=timeout)
