@@ -5,6 +5,7 @@ from glob import glob
 import time
 from datetime import datetime, timedelta
 import threading
+import queue
 
 # Configuration
 import yaml
@@ -24,6 +25,7 @@ from watchdog.events import FileSystemEventHandler
 # Global state
 running = True
 wake_up_event = threading.Event()
+reload_queue = queue.Queue()
 
 
 ### File system event handler
@@ -31,28 +33,27 @@ class ScheduleFileHandler(FileSystemEventHandler):
     """Monitors schedule files and folders for changes"""
     def __init__(self):
         super().__init__()
-        self.reload_needed = False
 
     def on_modified(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [MODIFY]: {event.src_path}", "debug")
-            self.reload_needed = True
+            reload_queue.put(('modify', event.src_path))
             wake_up_event.set()  # Wake up main loop immediately
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [CREATE]: {event.src_path}", "debug")
-            self.reload_needed = True
+            reload_queue.put(('create', event.src_path))
             wake_up_event.set()  # Wake up main loop immediately
         elif event.is_directory:
             log_message(f"File system event [CREATE DIR]: {event.src_path}", "debug")
-            self.reload_needed = True
+            reload_queue.put(('create_dir', event.src_path))
             wake_up_event.set()  # Wake up main loop immediately
 
     def on_deleted(self, event):
         if not event.is_directory and event.src_path.endswith('schedule.csv'):
             log_message(f"File system event [DELETE]: {event.src_path}", "debug")
-            self.reload_needed = True
+            reload_queue.put(('delete', event.src_path))
             wake_up_event.set()  # Wake up main loop immediately
 
 
@@ -202,7 +203,13 @@ def parse_schedule(file_path):
     try:
         with open(file_path, 'r') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=';')
-            for row in reader:
+            rows = list(reader)
+
+            if not rows:
+                log_message(f"Schedule file {file_path} is empty (header only), skipping", "debug")
+                return schedules
+
+            for row in rows:
                 start_date = datetime.strptime(row['Start Date'], "%d.%m.%Y")
                 end_date = datetime.strptime(row['End Date'], "%d.%m.%Y")
                 start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
@@ -332,15 +339,22 @@ def main():
         wake_up_event.clear()  # Reset event at start of loop
         now = datetime.now()
 
-        # Reload schedules if files changed - do it immediately and continue
-        if file_handler.reload_needed:
-            log_message("Reloading schedules due to file changes", "info")
+        # Process all queued file events - do it immediately and continue
+        events_processed = 0
+        while not reload_queue.empty():
+            try:
+                event_type, file_path = reload_queue.get_nowait()
+                events_processed += 1
+                log_message(f"Processing file event: {event_type} for {file_path}", "debug")
+            except queue.Empty:
+                break
+
+        if events_processed > 0:
+            log_message(f"Reloading schedules due to {events_processed} file change events", "info")
             try:
                 schedules = load_and_check_schedules(transmit_sets_path)
-                file_handler.reload_needed = False
             except Exception as e:
                 log_message(f"Error loading schedules: {e}", level="warning")
-                file_handler.reload_needed = False
             continue  # Immediately check schedules after reload
 
         log_message("Current schedules:", "info")
