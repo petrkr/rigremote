@@ -85,11 +85,17 @@
     <script>
         $(document).ready(function() {
             // Server time synchronization
-            let serverTimeOffset = 0; // Offset between server and client in milliseconds
+            let serverTimeOffset = null; // Offset between server and client in milliseconds (null = not synced yet)
             let lastSyncTime = 0; // Client timestamp of last sync
 
             // Function to update displayed time
             function updateDisplayedTime() {
+                // Only update if we have successfully synced with server
+                if (serverTimeOffset === null) {
+                    console.log('Server time not synced yet, skipping update');
+                    return; // Don't show browser time as fake server time
+                }
+
                 const now = new Date();
                 const serverTime = new Date(now.getTime() + serverTimeOffset);
 
@@ -123,8 +129,12 @@
                         // Immediately update display
                         updateDisplayedTime();
                     },
-                    error: function() {
-                        $('#server-time').text('Error syncing');
+                    error: function(xhr, status, error) {
+                        console.log('Server time sync failed:', status, error);
+                        serverTimeOffset = null; // Reset to prevent showing browser time
+                        $('#server-date').text('N/A');
+                        $('#server-time').text('Endpoint not available');
+                        $('#server-timezone').text('N/A');
                     }
                 });
             }
