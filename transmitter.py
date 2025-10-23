@@ -253,7 +253,8 @@ def parse_schedule(file_path):
 
     except Exception as e:
         log_message(f"Error reading schedule file '{file_path}': {e}", "error")
-        exit(1)
+        log_message(f"Skipping schedule file '{file_path}' due to errors", "warning")
+        return []  # Return empty list, let other schedules load
 
     return schedules
 
