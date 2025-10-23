@@ -224,6 +224,14 @@ def parse_schedule(file_path):
                 power = int(row['Power (W)']) if row['Power (W)'].strip() else 5
                 pause = int(row['Pause (sec)']) if row['Pause (sec)'].strip() else 60
 
+                # Validate - skip invalid rows silently (user is an idiot)
+                if duration_minutes <= 0:
+                    log_message(f"Skipping invalid row: duration must be positive (got {duration_minutes})", "debug")
+                    continue
+                if start_date > end_date:
+                    log_message(f"Skipping invalid row: start date after end date", "debug")
+                    continue
+
                 start_datetime = datetime.combine(start_date, start_time)
                 end_datetime = start_datetime + timedelta(minutes=duration_minutes)
 
