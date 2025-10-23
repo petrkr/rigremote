@@ -210,6 +210,11 @@ def parse_schedule(file_path):
                 return schedules
 
             for row in rows:
+                # Check if row has required columns
+                if 'Start Date' not in row or not row['Start Date'].strip():
+                    log_message(f"Skipping invalid row in {file_path}: missing or empty Start Date", "debug")
+                    continue
+
                 start_date = datetime.strptime(row['Start Date'], "%d.%m.%Y")
                 end_date = datetime.strptime(row['End Date'], "%d.%m.%Y")
                 start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
