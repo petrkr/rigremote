@@ -409,7 +409,7 @@ def main():
 
         # Calculate smart sleep timeout
         if next_schedule_time:
-            timeout = (next_schedule_time - datetime.now()).total_seconds()
+            timeout = (next_schedule_time - now).total_seconds()
             timeout = max(1, timeout)  # Minimum 1s to prevent negative/zero timeout
             log_message(f"Sleeping until next schedule at {next_schedule_time} (timeout: {int(timeout)}s)", "info")
         else:
