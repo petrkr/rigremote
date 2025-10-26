@@ -144,20 +144,14 @@ def stream_audio(folder_name, file_name):
 # API endpoint to get server time
 @app.route('/api/server_time')
 def get_server_time():
-    now = datetime.now()
-
-    # Get timezone information
-    timezone_name = time.tzname[time.daylight]
-    utc_offset = time.timezone if not time.daylight else time.altzone
-    utc_offset_hours = -utc_offset / 3600
+    now = datetime.now().astimezone()
 
     return jsonify({
         'date': now.strftime('%Y-%m-%d'),
         'time': now.strftime('%H:%M:%S'),
-        'datetime': now.strftime('%Y-%m-%d %H:%M:%S'),
-        'timezone': timezone_name,
-        'utc_offset': f'UTC{utc_offset_hours:+.1f}',
-        'timestamp': now.timestamp()
+        "timezone": now.tzname(),
+        "utc_offset": now.strftime("UTC%z"),
+        "timestamp": now.timestamp()
     })
 
 
