@@ -62,3 +62,31 @@ a:hover {
 .ui-datepicker-close {
     display: none !important;
 }
+
+/* Rig Status Table Styling */
+#rig-status-table {
+    width: auto;
+    max-width: 800px;
+}
+
+#rig-status-table td {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Rig Status Classes */
+.tx-active {
+    color: red;
+    font-weight: bold;
+}
+
+.rx-active {
+    color: green;
+}
+
+.rig-unavailable {
+    color: gray;
+    font-style: italic;
+}

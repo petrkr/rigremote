@@ -34,6 +34,28 @@
         </tbody>
     </table>
 
+    <!-- Rig Status Display -->
+    <table id="rig-status-table">
+        <thead>
+            <tr>
+                <th>Frequency</th>
+                <th>Mode</th>
+                <th>Power</th>
+                <th>Status</th>
+                <th>S-Meter</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="rig-frequency">Loading...</td>
+                <td id="rig-mode">Loading...</td>
+                <td id="rig-power">Loading...</td>
+                <td id="rig-ptt">Loading...</td>
+                <td id="rig-smeter">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
     <table id="folder-table">
         <thead>
             <tr>
@@ -74,6 +96,12 @@
                 $('#server-date').text('N/A');
                 $('#server-time').text('Disconnected');
                 $('#server-timezone').text('N/A');
+                // Reset rig status to unavailable
+                $('#rig-frequency').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#rig-smeter').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
             });
 
             socket.on('server_time_update', function(data) {
@@ -87,6 +115,37 @@
                 if (data.timezone && data.utc_offset) {
                     const timezoneText = data.timezone + ' (' + data.utc_offset + ')';
                     $('#server-timezone').text(timezoneText);
+                }
+            });
+
+            socket.on('rig_status_update', function(data) {
+                // Handle unavailable status
+                if (data.status === 'unavailable') {
+                    $('#rig-frequency').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#rig-smeter').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    return;
+                }
+
+                // Update individual fields if present
+                if (data.frequency) {
+                    $('#rig-frequency').text(data.frequency + ' MHz').removeClass('rig-unavailable');
+                }
+                if (data.mode) {
+                    $('#rig-mode').text(data.mode).removeClass('rig-unavailable');
+                }
+                if (data.power) {
+                    $('#rig-power').text(data.power + ' W').removeClass('rig-unavailable');
+                }
+                if (data.ptt) {
+                    $('#rig-ptt').text(data.ptt)
+                        .removeClass('tx-active rx-active rig-unavailable')
+                        .addClass(data.ptt === 'TX' ? 'tx-active' : 'rx-active');
+                }
+                if (data.smeter) {
+                    $('#rig-smeter').text(data.smeter).removeClass('rig-unavailable');
                 }
             });
 
