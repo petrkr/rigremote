@@ -394,12 +394,6 @@ def main():
     config = load_config('config.yaml')
     global_settings = config['global_settings']
     transmit_sets_path = config['transmission_sets_path']
-    audio_device = get_audio_output_device(global_settings['audio_device_name'])
-
-    if not audio_device:
-        log_message(f"Error: Audio device '{global_settings['audio_device_name']}' not found.", "error")
-        log_message(f"Available audio devices: {_get_audio_devices()}", level="info")
-        sys.exit(1)
 
     # Check transmission directory - no retry needed for this
     if not os.path.exists(transmit_sets_path):
@@ -413,11 +407,11 @@ def main():
         log_message("Service stopped during device initialization", "info")
         return
 
-    try:
-        pygame.mixer.init(devicename=audio_device)
-    except Exception as e:
-        log_message(f"Error initializing audio: {e}", level="error")
-        sys.exit(1)
+    audio_device = initialize_audio_with_retry(global_settings['audio_device_name'])
+    if not audio_device:
+        log_message("Service stopped during audio initialization", "info")
+        rig.close()
+        return
 
     # Setup file watcher for schedule changes
     file_handler = ScheduleFileHandler()
