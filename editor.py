@@ -270,7 +270,7 @@ def background_rig_status():
             else:
                 raise Exception(f"Invalid mode type: {type(mode_tuple)}")
 
-            if mode is None or not isinstance(mode, int) or mode > 100000:
+            if mode is None or not isinstance(mode, int):
                 raise Exception(f"Invalid mode value: {mode}")
 
             power_level = rig.get_level_f(Hamlib.RIG_LEVEL_RFPOWER)
