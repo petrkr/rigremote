@@ -2,5 +2,5 @@ global_settings:
   rig_address: localhost
   signal_power_threshold: 10  # RF power threshold
   max_waiting_time: 300  # Maximum waiting time in seconds
-  audio_device_name: "Built-in Audio Analog Stereo"
+  audio_device_name: "pulse"
 transmission_sets_path: /mnt/data/sstv/

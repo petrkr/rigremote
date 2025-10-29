@@ -15,8 +15,8 @@ import csv
 import Hamlib
 
 # Audio playback
-import pygame
-import pygame._sdl2.audio as sdl2_audio
+import sounddevice as sd
+import soundfile as sf
 
 # File system monitoring
 from watchdog.observers import Observer
@@ -58,21 +58,36 @@ class ScheduleFileHandler(FileSystemEventHandler):
 
 
 ### Audio playback functions
-def _get_audio_devices(capture_devices: bool = False):
-    init_by_me = not pygame.mixer.get_init()
-    if init_by_me:
-        pygame.mixer.init()
-    devices = tuple(sdl2_audio.get_audio_device_names(capture_devices))
-    if init_by_me:
-        pygame.mixer.quit()
-    return devices
+def _get_audio_devices():
+    """Get list of all playback audio devices with their indices and info"""
+    try:
+        devices = sd.query_devices()
+        playback_devices = []
+        for i, dev in enumerate(devices):
+            if dev['max_output_channels'] > 0:
+                hostapi = sd.query_hostapis(dev['hostapi'])
+                playback_devices.append({
+                    'index': i,
+                    'name': dev['name'],
+                    'hostapi': hostapi['name']
+                })
+        return playback_devices
+    except Exception as e:
+        log_message(f"Error querying audio devices: {e}", "error")
+        return []
 
 
 def get_audio_output_device(device_name):
+    """Find audio device by partial name match, return device index or None"""
     devices = _get_audio_devices()
-    for device in devices:
-        if device_name in device:
-            return device
+
+    # Try partial match
+    for dev in devices:
+        if device_name.lower() in dev['name'].lower():
+            log_message(f"Found audio device: '{dev['name']}' (index {dev['index']}, {dev['hostapi']})", "debug")
+            return dev['index']
+
+    # No match found - do NOT fallback, return None
     return None
 
 
@@ -145,17 +160,14 @@ def initialize_rig_with_retry(rig_address, retry_interval=10):
 def initialize_audio_with_retry(audio_device_name, retry_interval=10):
     """Initialize audio device with infinite retry on failure"""
     while running:
-        # First make sure mixer is not initialized
-        try:
-            pygame.mixer.quit()
-        except:
-            pass
-
-        # Check if device exists - this will init/quit mixer internally
-        audio_device = get_audio_output_device(audio_device_name)
-        if not audio_device:
+        # Check if device exists
+        device_index = get_audio_output_device(audio_device_name)
+        if device_index is None:
             log_message(f"Audio device '{audio_device_name}' not found.", "warning")
-            log_message(f"Available audio devices: {_get_audio_devices()}", "info")
+            available_devices = _get_audio_devices()
+            log_message(f"Available audio devices:", "info")
+            for dev in available_devices:
+                log_message(f"  [{dev['index']}] {dev['name']} ({dev['hostapi']})", "info")
             log_message(f"Retrying in {retry_interval} seconds...", "info")
             # Sleep with interrupt check every second
             for _ in range(retry_interval):
@@ -164,27 +176,10 @@ def initialize_audio_with_retry(audio_device_name, retry_interval=10):
                 time.sleep(1)
             continue
 
-        # Try to initialize pygame mixer with the specific device
-        try:
-            pygame.mixer.init(devicename=audio_device)
-            log_message(f"Audio device '{audio_device}' initialized successfully", "info")
-            return audio_device
-        except Exception as e:
-            log_message(f"Error initializing audio device '{audio_device}': {e}", "warning")
-            # Get fresh list of devices after failure
-            available_devices = _get_audio_devices()
-            log_message(f"Available audio devices: {available_devices}", "info")
-            log_message(f"Retrying in {retry_interval} seconds...", "info")
-            # Clean up on failure
-            try:
-                pygame.mixer.quit()
-            except:
-                pass
-            # Sleep with interrupt check every second
-            for _ in range(retry_interval):
-                if not running:
-                    return None
-                time.sleep(1)
+        # Device found, return its index
+        log_message(f"Audio device found (index {device_index})", "info")
+        return device_index
+
     return None
 
 def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
@@ -201,7 +196,7 @@ def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
     return False
 
 
-def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal_power_threshold, max_waiting_time):
+def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power, pause, signal_power_threshold, max_waiting_time):
     log_message(f"Starting transmission of {set_folder} on {frequency} MHz, Power: {power} W")
 
     rig.set_mode(mode)
@@ -220,22 +215,27 @@ def transmit(rig : Hamlib.Rig, set_folder, frequency, mode, power, pause, signal
 
     for file in files:
         log_message(f"Transmitting {file}...")
+        file_path = os.path.join(set_folder, file)
+
+        # Load audio file
         try:
-            pygame.mixer.music.load(os.path.join(set_folder, file))
-        except pygame.error as e:
+            audio_data, samplerate = sf.read(file_path)
+        except Exception as e:
             log_message(f"Error loading audio file '{file}': {e}, skipping", "warning")
             continue
 
         rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_ON)
         time.sleep(1)
-        pygame.mixer.music.play()
 
-        while pygame.mixer.music.get_busy():
+        # Start playback in non-blocking mode
+        sd.play(audio_data, samplerate, device=device_index)
+
+        # Wait for playback to finish or user interrupt
+        while sd.get_stream().active:
             if not running:
-                pygame.mixer.music.stop()
+                sd.stop()
                 break
-
-            time.sleep(1)
+            time.sleep(0.1)
 
         if not running:
             log_message(f"Transmission of {set_folder} interrupted by user.")
@@ -407,8 +407,8 @@ def main():
         log_message("Service stopped during device initialization", "info")
         return
 
-    audio_device = initialize_audio_with_retry(global_settings['audio_device_name'])
-    if not audio_device:
+    device_index = initialize_audio_with_retry(global_settings['audio_device_name'])
+    if device_index is None:
         log_message("Service stopped during audio initialization", "info")
         rig.close()
         return
@@ -467,6 +467,7 @@ def main():
                 print_schedules([row])
                 transmit(
                     rig=rig,
+                    device_index=device_index,
                     set_folder=set_folder,
                     frequency=float(row['frequency']),
                     mode=parse_mode(row['mode']),
@@ -510,7 +511,11 @@ def main():
     log_message("Stopping file watcher...", "info")
     observer.stop()
     observer.join()
-    pygame.mixer.quit()
+    # Stop any playing audio
+    try:
+        sd.stop()
+    except:
+        pass
     rig.close()
     log_message("Service stopped gracefully.", level="info")
 
