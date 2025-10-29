@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, jsonify
+from flask_socketio import SocketIO, emit
 from glob import glob
 import os
 import pandas as pd
 from datetime import datetime
 import time
+import threading
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Directory containing subfolders with schedule.csv files
 BASE_DIR = '/mnt/data/sstv'
@@ -155,5 +158,50 @@ def get_server_time():
     })
 
 
+def background_server_time():
+    """Background thread emitting server time every second"""
+    last_date = None
+    while True:
+        now = datetime.now().astimezone()
+        current_date = now.strftime('%Y-%m-%d')
+
+        # Send full update if date changed (or first run)
+        if current_date != last_date:
+            socketio.emit('server_time_update', {
+                'date': current_date,
+                'time': now.strftime('%H:%M:%S'),
+                'timezone': now.tzname(),
+                'utc_offset': now.strftime("UTC%z")
+            }, namespace='/')
+            last_date = current_date
+        else:
+            # Send only time update
+            socketio.emit('server_time_update', {
+                'time': now.strftime('%H:%M:%S')
+            }, namespace='/')
+
+        socketio.sleep(1)
+
+
+@socketio.on('connect')
+def handle_connect():
+    # Send full server time data to newly connected client
+    now = datetime.now().astimezone()
+    emit('server_time_update', {
+        'date': now.strftime('%Y-%m-%d'),
+        'time': now.strftime('%H:%M:%S'),
+        'timezone': now.tzname(),
+        'utc_offset': now.strftime("UTC%z")
+    })
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    pass
+
+
 if __name__ == '__main__':
-    app.run("::", debug=True)
+    # Start background thread for server time
+    socketio.start_background_task(background_server_time)
+
+    socketio.run(app, host="::", debug=True)

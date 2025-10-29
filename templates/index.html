@@ -6,9 +6,15 @@
     <title>Folder List</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
 </head>
 <body>
     <h1>Available Folders</h1>
+
+    <!-- WebSocket Status -->
+    <div style="margin-bottom: 10px;">
+        <strong>WebSocket Status:</strong> <span id="ws-status" style="font-weight: bold;">Connecting...</span>
+    </div>
 
     <!-- Server Time Display -->
     <table id="server-time-table">
@@ -54,69 +60,40 @@
 
     <script>
         $(document).ready(function() {
-            // Server time synchronization
-            let serverTimeOffset = null; // Offset between server and client in milliseconds (null = not synced yet)
-            let lastSyncTime = 0; // Client timestamp of last sync
+            // Initialize Socket.IO connection
+            const socket = io();
 
-            // Function to update displayed time
-            function updateDisplayedTime() {
-                // Only update if we have successfully synced with server
-                if (serverTimeOffset === null) {
-                    console.log('Server time not synced yet, skipping update');
-                    return; // Don't show browser time as fake server time
+            socket.on('connect', function() {
+                console.log('WebSocket connected');
+                $('#ws-status').text('Connected').css('color', 'green');
+            });
+
+            socket.on('disconnect', function() {
+                console.log('WebSocket disconnected');
+                $('#ws-status').text('Disconnected').css('color', 'red');
+                $('#server-date').text('N/A');
+                $('#server-time').text('Disconnected');
+                $('#server-timezone').text('N/A');
+            });
+
+            socket.on('server_time_update', function(data) {
+                // Update only fields that are present in the data
+                if (data.time) {
+                    $('#server-time').text(data.time);
                 }
+                if (data.date) {
+                    $('#server-date').text(data.date);
+                }
+                if (data.timezone && data.utc_offset) {
+                    const timezoneText = data.timezone + ' (' + data.utc_offset + ')';
+                    $('#server-timezone').text(timezoneText);
+                }
+            });
 
-                const now = new Date();
-                const serverTime = new Date(now.getTime() + serverTimeOffset);
-
-                const dateStr = serverTime.toISOString().split('T')[0];
-                const timeStr = serverTime.toTimeString().split(' ')[0];
-
-                $('#server-date').text(dateStr);
-                $('#server-time').text(timeStr);
-            }
-
-            // Function to sync with server
-            function syncWithServer() {
-                const requestTime = Date.now();
-
-                $.ajax({
-                    url: '/api/server_time',
-                    type: 'GET',
-                    success: function(data) {
-                        const responseTime = Date.now();
-                        const roundTripTime = responseTime - requestTime;
-
-                        // Estimate server time accounting for network latency
-                        const serverTimestamp = data.timestamp * 1000 + (roundTripTime / 2);
-                        serverTimeOffset = serverTimestamp - responseTime;
-                        lastSyncTime = responseTime;
-
-                        // Update timezone info
-                        const timezoneText = data.timezone + ' (' + data.utc_offset + ')';
-                        $('#server-timezone').text(timezoneText);
-
-                        // Immediately update display
-                        updateDisplayedTime();
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('Server time sync failed:', status, error);
-                        serverTimeOffset = null; // Reset to prevent showing browser time
-                        $('#server-date').text('N/A');
-                        $('#server-time').text('Endpoint not available');
-                        $('#server-timezone').text('N/A');
-                    }
-                });
-            }
-
-            // Initial sync
-            syncWithServer();
-
-            // Sync with server every 10 seconds
-            setInterval(syncWithServer, 10000);
-
-            // Update displayed time every second
-            setInterval(updateDisplayedTime, 1000);
+            socket.on('connect_error', function(error) {
+                console.log('WebSocket connection error:', error);
+                // Don't change status - disconnect event already handled it
+            });
         });
     </script>
 </body>
