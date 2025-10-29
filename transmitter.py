@@ -92,17 +92,100 @@ def log_message(message, level="info"):
 
 
 def initialize_rig(rig_address):
-    Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
-    rig = Hamlib.Rig(Hamlib.RIG_MODEL_NETRIGCTL)
-    rig.set_conf("rig_pathname", rig_address)
-    rig.open()
-    log_message(f"Connected to rig at {rig_address}")
-    log_message(f"Rig model: {rig.get_info()}")
-    log_message(f"Rig frequency: {rig.get_freq()} Hz")
-    log_message(f"Rig mode: {rig.get_mode()}")
-    log_message(f"Rig power: {int(rig.get_level_f('RFPOWER') * 100)} W")
+    """Initialize rig connection - may raise exception if unavailable"""
+    rig = None
+    try:
+        Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
+        rig = Hamlib.Rig(Hamlib.RIG_MODEL_NETRIGCTL)
+        rig.set_conf("rig_pathname", rig_address)
+        rig.set_conf("retry", "0")
+        rig.set_conf("timeout", "2000")
+        rig.open()
 
-    return rig
+        # Check error status after open
+        if rig.error_status != 0:
+            raise Exception(f"Open failed with error_status: {rig.error_status}")
+
+        # Test connection
+        log_message(f"Connected to rig at {rig_address}")
+        log_message(f"Rig model: {rig.get_info()}")
+        log_message(f"Rig frequency: {rig.get_freq()} Hz")
+        log_message(f"Rig mode: {rig.get_mode()}")
+        log_message(f"Rig power: {int(rig.get_level_f('RFPOWER') * 100)} W")
+
+        return rig
+    except Exception as e:
+        # Clean up on failure
+        if rig:
+            try:
+                rig.close()
+            except:
+                pass
+        raise Exception(f"Failed to initialize rig: {e}")
+
+
+def initialize_rig_with_retry(rig_address, retry_interval=10):
+    """Initialize rig with infinite retry on failure"""
+    while running:
+        try:
+            rig = initialize_rig(rig_address)
+            log_message("Rig initialized successfully", "info")
+            return rig
+        except Exception as e:
+            log_message(f"Failed to initialize rig: {e}", "warning")
+            log_message(f"Retrying in {retry_interval} seconds...", "info")
+            # Sleep with interrupt check every second
+            for _ in range(retry_interval):
+                if not running:
+                    return None
+                time.sleep(1)
+    return None
+
+
+def initialize_audio_with_retry(audio_device_name, retry_interval=10):
+    """Initialize audio device with infinite retry on failure"""
+    while running:
+        # First make sure mixer is not initialized
+        try:
+            pygame.mixer.quit()
+        except:
+            pass
+
+        # Check if device exists - this will init/quit mixer internally
+        audio_device = get_audio_output_device(audio_device_name)
+        if not audio_device:
+            log_message(f"Audio device '{audio_device_name}' not found.", "warning")
+            log_message(f"Available audio devices: {_get_audio_devices()}", "info")
+            log_message(f"Retrying in {retry_interval} seconds...", "info")
+            # Sleep with interrupt check every second
+            for _ in range(retry_interval):
+                if not running:
+                    return None
+                time.sleep(1)
+            continue
+
+        # Try to initialize pygame mixer with the specific device
+        try:
+            pygame.mixer.init(devicename=audio_device)
+            log_message(f"Audio device '{audio_device}' initialized successfully", "info")
+            return audio_device
+        except Exception as e:
+            log_message(f"Error initializing audio device '{audio_device}': {e}", "warning")
+            # Get fresh list of devices after failure
+            available_devices = _get_audio_devices()
+            log_message(f"Available audio devices: {available_devices}", "info")
+            log_message(f"Retrying in {retry_interval} seconds...", "info")
+            # Clean up on failure
+            try:
+                pygame.mixer.quit()
+            except:
+                pass
+            # Sleep with interrupt check every second
+            for _ in range(retry_interval):
+                if not running:
+                    return None
+                time.sleep(1)
+    return None
 
 def check_signal_power(rig : Hamlib.Rig, threshold, max_waiting_time):
     start_time = time.time()
@@ -318,13 +401,17 @@ def main():
         log_message(f"Available audio devices: {_get_audio_devices()}", level="info")
         sys.exit(1)
 
+    # Check transmission directory - no retry needed for this
     if not os.path.exists(transmit_sets_path):
         log_message(f"Error: Transmission directory '{transmit_sets_path}' does not exist.", "error")
         sys.exit(1)
 
-    rig = initialize_rig(global_settings['rig_address'])
-
-    log_message("Initializing audio", level="info")
+    # Initialize devices with retry - will wait until both are available
+    log_message("Initializing devices (will retry until available)...", "info")
+    rig = initialize_rig_with_retry(global_settings['rig_address'])
+    if not rig:
+        log_message("Service stopped during device initialization", "info")
+        return
 
     try:
         pygame.mixer.init(devicename=audio_device)
