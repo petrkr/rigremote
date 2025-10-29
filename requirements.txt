@@ -1,0 +1,12 @@
+# Python packages for venv
+flask
+flask-socketio
+pandas
+pyyaml
+sounddevice
+soundfile
+watchdog
+
+# System packages (install via apt/pacman, not pip):
+# - python3-hamlib (Debian) / python-hamlib (Arch)
+# - libsndfile1 (for MP3 support in soundfile)
