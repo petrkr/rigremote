@@ -51,7 +51,12 @@
                 <td id="rig-mode">Loading...</td>
                 <td id="rig-power">Loading...</td>
                 <td id="rig-ptt">Loading...</td>
-                <td id="rig-smeter">Loading...</td>
+                <td id="rig-smeter">
+                    <div class="smeter-container">
+                        <div class="smeter-bar" id="smeter-bar"></div>
+                        <span class="smeter-text" id="smeter-text">Loading...</span>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -101,7 +106,9 @@
                 $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                 $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                 $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
-                $('#rig-smeter').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#smeter-text').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#smeter-bar').css('width', '0%');
+                $('#rig-smeter').addClass('rig-unavailable');
             });
 
             socket.on('server_time_update', function(data) {
@@ -125,7 +132,9 @@
                     $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                     $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                     $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
-                    $('#rig-smeter').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#smeter-text').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#smeter-bar').css('width', '0%');
+                    $('#rig-smeter').addClass('rig-unavailable');
                     return;
                 }
 
@@ -145,7 +154,14 @@
                         .addClass(data.ptt === 'TX' ? 'tx-active' : 'rx-active');
                 }
                 if (data.smeter) {
-                    $('#rig-smeter').text(data.smeter).removeClass('rig-unavailable');
+                    const smeterValue = parseInt(data.smeter);
+                    const smeterMin = -60;
+                    const smeterMax = 30;
+                    const percentage = Math.max(0, Math.min(100, ((smeterValue - smeterMin) / (smeterMax - smeterMin)) * 100));
+
+                    $('#smeter-text').text(smeterValue + ' dB').removeClass('rig-unavailable');
+                    $('#smeter-bar').css('width', percentage + '%');
+                    $('#rig-smeter').removeClass('rig-unavailable');
                 }
             });
 
