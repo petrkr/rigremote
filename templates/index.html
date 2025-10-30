@@ -156,7 +156,7 @@
                 if (data.smeter) {
                     const smeterValue = parseInt(data.smeter);
                     const smeterMin = -60;
-                    const smeterMax = 30;
+                    const smeterMax = 40;
                     const percentage = Math.max(0, Math.min(100, ((smeterValue - smeterMin) / (smeterMax - smeterMin)) * 100));
 
                     $('#smeter-text').text(smeterValue + ' dB').removeClass('rig-unavailable');
