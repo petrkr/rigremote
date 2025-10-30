@@ -7,6 +7,8 @@ pyyaml
 sounddevice
 soundfile
 watchdog
+scipy
+numpy
 
 # System packages (install via apt/pacman, not pip):
 # - python3-hamlib (Debian) / python-hamlib (Arch)
