@@ -224,26 +224,41 @@ def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power,
             log_message(f"Error loading audio file '{file}': {e}, skipping", "warning")
             continue
 
+        # Get device's default sample rate
+        try:
+            device_info = sd.query_devices(device_index)
+            device_samplerate = int(device_info['default_samplerate'])
+            log_message(f"Audio file sample rate: {samplerate} Hz, device default: {device_samplerate} Hz", "debug")
+        except Exception as e:
+            log_message(f"Error querying device sample rate: {e}, using file sample rate", "warning")
+            device_samplerate = samplerate
+
+        # PTT ON with guaranteed cleanup
         rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_ON)
-        time.sleep(1)
+        try:
+            time.sleep(1)
 
-        # Start playback in non-blocking mode
-        sd.play(audio_data, samplerate, device=device_index)
+            # Start playback in non-blocking mode - use device's sample rate
+            sd.play(audio_data, device_samplerate, device=device_index)
 
-        # Wait for playback to finish or user interrupt
-        while sd.get_stream().active:
+            # Wait for playback to finish or user interrupt
+            while sd.get_stream().active:
+                if not running:
+                    sd.stop()
+                    break
+                time.sleep(0.1)
+
             if not running:
-                sd.stop()
+                log_message(f"Transmission of {set_folder} interrupted by user.")
                 break
-            time.sleep(0.1)
 
-        if not running:
-            log_message(f"Transmission of {set_folder} interrupted by user.")
+            log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
+
+        except Exception as e:
+            log_message(f"Error during transmission of {file}: {e}", "error")
+        finally:
+            # ALWAYS turn off PTT, even on error
             rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_OFF)
-            break
-
-        log_message(f"Finished transmitting {file}. Waiting {pause} sec for next one")
-        rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_OFF)
 
         for _ in range(pause):
             if not running:
