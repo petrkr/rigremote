@@ -26,7 +26,7 @@ Tested on Raspbian Pi OS 11/12/13, Debian 12/13, and Arch Linux.
 #### Debian/Ubuntu
 ```bash
 # Hamlib and audio libraries
-sudo apt install libhamlib-dev python3-hamlib libsndfile1 libmpg123-0
+sudo apt install libhamlib-dev python3-hamlib libsndfile1 libmpg123-0 libportaudio2
 
 # For venv
 sudo apt install python3-venv
