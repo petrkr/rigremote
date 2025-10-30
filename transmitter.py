@@ -18,7 +18,7 @@ import Hamlib
 import sounddevice as sd
 import soundfile as sf
 import numpy as np
-from scipy import signal
+from scipy.signal import resample
 
 # File system monitoring
 from watchdog.observers import Observer
@@ -242,10 +242,10 @@ def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power,
                 if audio_data.ndim == 2:
                     resampled = np.zeros((num_samples, audio_data.shape[1]))
                     for ch in range(audio_data.shape[1]):
-                        resampled[:, ch] = signal.resample(audio_data[:, ch], num_samples)
+                        resampled[:, ch] = resample(audio_data[:, ch], num_samples)
                     audio_data = resampled
                 else:
-                    audio_data = signal.resample(audio_data, num_samples)
+                    audio_data = resample(audio_data, num_samples)
 
                 log_message(f"Resampling complete", "debug")
 
