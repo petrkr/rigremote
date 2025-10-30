@@ -11,7 +11,7 @@ import Hamlib
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # Directory containing subfolders with schedule.csv files
 BASE_DIR = '/mnt/data/sstv'
@@ -446,4 +446,5 @@ if __name__ == '__main__':
     socketio.start_background_task(background_server_time)
     socketio.start_background_task(background_rig_status)
 
-    socketio.run(app, host="::", debug=True, allow_unsafe_werkzeug=True)
+    # Production mode - runs on port 80 with eventlet
+    socketio.run(app, host="::", port=80, debug=False)

@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 WorkingDirectory=/opt/rigremote
-ExecStart=/usr/bin/gunicorn --timeout 300 --workers 3 --bind [::]:80 editor:app
+ExecStart=/opt/rigremote/venv/bin/python3 -u /opt/rigremote/editor.py
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

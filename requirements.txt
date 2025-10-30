@@ -1,6 +1,7 @@
 # Python packages for venv
 flask
 flask-socketio
+eventlet
 pandas
 pyyaml
 sounddevice
