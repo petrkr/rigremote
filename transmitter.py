@@ -17,6 +17,8 @@ import Hamlib
 # Audio playback
 import sounddevice as sd
 import soundfile as sf
+import numpy as np
+from scipy import signal
 
 # File system monitoring
 from watchdog.observers import Observer
@@ -229,6 +231,24 @@ def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power,
             device_info = sd.query_devices(device_index)
             device_samplerate = int(device_info['default_samplerate'])
             log_message(f"Audio file sample rate: {samplerate} Hz, device default: {device_samplerate} Hz", "debug")
+
+            # Resample if sample rates don't match
+            if samplerate != device_samplerate:
+                log_message(f"Resampling audio from {samplerate} Hz to {device_samplerate} Hz", "debug")
+                # Calculate number of samples after resampling
+                num_samples = int(len(audio_data) * device_samplerate / samplerate)
+
+                # Resample each channel separately if stereo
+                if audio_data.ndim == 2:
+                    resampled = np.zeros((num_samples, audio_data.shape[1]))
+                    for ch in range(audio_data.shape[1]):
+                        resampled[:, ch] = signal.resample(audio_data[:, ch], num_samples)
+                    audio_data = resampled
+                else:
+                    audio_data = signal.resample(audio_data, num_samples)
+
+                log_message(f"Resampling complete", "debug")
+
         except Exception as e:
             log_message(f"Error querying device sample rate: {e}, using file sample rate", "warning")
             device_samplerate = samplerate
@@ -238,7 +258,7 @@ def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power,
         try:
             time.sleep(1)
 
-            # Start playback in non-blocking mode - use device's sample rate
+            # Start playback in non-blocking mode
             sd.play(audio_data, device_samplerate, device=device_index)
 
             # Wait for playback to finish or user interrupt
