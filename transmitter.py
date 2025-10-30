@@ -227,42 +227,45 @@ def transmit(rig : Hamlib.Rig, device_index, set_folder, frequency, mode, power,
             log_message(f"Error loading audio file '{file}': {e}, skipping", "warning")
             continue
 
-        # Try to use original sample rate - only resample if device doesn't support it
+        # Check if device supports the original sample rate
         playback_samplerate = samplerate
         playback_data = audio_data
+
+        try:
+            # Check if device supports original sample rate
+            sd.check_output_settings(device=device_index, samplerate=samplerate)
+            log_message(f"Device supports original sample rate: {samplerate} Hz", "debug")
+        except Exception as e:
+            # Device doesn't support this sample rate - need to resample
+            log_message(f"Device doesn't support {samplerate} Hz: {e}", "debug")
+            device_info = sd.query_devices(device_index)
+            device_samplerate = int(device_info['default_samplerate'])
+            log_message(f"Resampling from {samplerate} Hz to device default {device_samplerate} Hz", "info")
+
+            # Calculate up/down factors
+            common = gcd(int(samplerate), int(device_samplerate))
+            up = int(device_samplerate) // common
+            down = int(samplerate) // common
+
+            # Resample
+            if audio_data.ndim == 2:
+                resampled = []
+                for ch in range(audio_data.shape[1]):
+                    resampled.append(resample_poly(audio_data[:, ch], up, down))
+                playback_data = np.column_stack(resampled)
+            else:
+                playback_data = resample_poly(audio_data, up, down)
+
+            playback_samplerate = device_samplerate
+            log_message(f"Resampling complete", "debug")
 
         # PTT ON with guaranteed cleanup
         rig.set_ptt(Hamlib.RIG_VFO_CURR, Hamlib.RIG_PTT_ON)
         try:
             time.sleep(1)
 
-            # Try to play with original sample rate first
-            try:
-                log_message(f"Attempting playback at original sample rate: {playback_samplerate} Hz", "debug")
-                sd.play(playback_data, playback_samplerate, device=device_index)
-            except Exception as e:
-                # Device doesn't support this sample rate - resample to device default
-                log_message(f"Original sample rate not supported: {e}", "debug")
-                device_info = sd.query_devices(device_index)
-                device_samplerate = int(device_info['default_samplerate'])
-                log_message(f"Resampling from {playback_samplerate} Hz to device default {device_samplerate} Hz", "info")
-
-                # Calculate up/down factors
-                common = gcd(int(playback_samplerate), int(device_samplerate))
-                up = int(device_samplerate) // common
-                down = int(playback_samplerate) // common
-
-                # Resample
-                if playback_data.ndim == 2:
-                    resampled = []
-                    for ch in range(playback_data.shape[1]):
-                        resampled.append(resample_poly(playback_data[:, ch], up, down))
-                    playback_data = np.column_stack(resampled)
-                else:
-                    playback_data = resample_poly(playback_data, up, down)
-
-                # Retry with resampled data
-                sd.play(playback_data, device_samplerate, device=device_index)
+            # Start playback with appropriate sample rate
+            sd.play(playback_data, playback_samplerate, device=device_index)
 
             # Wait for playback to finish or user interrupt
             while sd.get_stream().active:
