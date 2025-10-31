@@ -92,10 +92,45 @@ a:hover {
 }
 
 /* S-Meter progressbar */
+.smeter-wrapper {
+    display: inline-block;
+}
+
+.smeter-scale {
+    position: relative;
+    width: 300px;
+    height: 22px;
+    margin-bottom: 2px;
+}
+
+.smeter-mark {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 30px;
+}
+
+.smeter-mark-text {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 11px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.smeter-mark-line {
+    display: block;
+    font-size: 14px;
+    line-height: 11px;
+    color: #666;
+}
+
 .smeter-container {
     position: relative;
-    width: 200px;
-    height: 20px;
+    width: 300px;
+    height: 24px;
     background-color: #333;
     border: 1px solid #666;
     border-radius: 3px;
@@ -116,7 +151,8 @@ a:hover {
     position: absolute;
     width: 100%;
     text-align: center;
-    line-height: 20px;
+    line-height: 24px;
+    font-size: 12px;
     color: white;
     font-weight: bold;
     text-shadow: 1px 1px 2px black;
