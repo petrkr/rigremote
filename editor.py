@@ -292,16 +292,33 @@ def background_rig_status():
             if ptt is None or (ptt != Hamlib.RIG_PTT_OFF and ptt != Hamlib.RIG_PTT_ON):
                 ptt = Hamlib.RIG_PTT_OFF  # Default to RX if invalid
 
-            smeter = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH)
-            # Error -11 (RIG_EINVAL) means function not implemented - that's OK, use default
-            if rig.error_status != 0:
-                if rig.error_status == -11:  # RIG_EINVAL - not implemented
-                    smeter = 0  # Default to S0
-                else:
-                    raise Exception(f"Rig error after get_level_i: {rig.error_status}")
+            # Read S-meter (RX) or SWR (TX) based on PTT state
+            if ptt == Hamlib.RIG_PTT_ON:
+                # TX mode - read SWR
+                smeter = rig.get_level_f(Hamlib.RIG_LEVEL_SWR)
+                # Error -11 (RIG_EINVAL) means function not implemented - that's OK, use default
+                if rig.error_status != 0:
+                    if rig.error_status == -11:  # RIG_EINVAL - not implemented
+                        smeter = 1.0  # Default to SWR 1.0 (perfect match)
+                    else:
+                        raise Exception(f"Rig error after get_level_f SWR: {rig.error_status}")
+                if smeter is None:
+                    smeter = 1.0  # Default to SWR 1.0 if None
+                # SWR is returned as float (e.g., 1.5 for 1.5:1)
+                # Convert to int representation for transmission (multiply by 10 to preserve one decimal)
+                smeter = int(smeter * 10)
+            else:
+                # RX mode - read S-meter
+                smeter = rig.get_level_i(Hamlib.RIG_LEVEL_STRENGTH)
+                # Error -11 (RIG_EINVAL) means function not implemented - that's OK, use default
+                if rig.error_status != 0:
+                    if rig.error_status == -11:  # RIG_EINVAL - not implemented
+                        smeter = 0  # Default to S0
+                    else:
+                        raise Exception(f"Rig error after get_level_i: {rig.error_status}")
 
-            if smeter is None:
-                smeter = 0  # Default to S0 if None
+                if smeter is None:
+                    smeter = 0  # Default to S0 if None
 
             # Build update with only changed fields
             update = {}

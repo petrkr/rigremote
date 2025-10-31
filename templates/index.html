@@ -42,7 +42,7 @@
                 <th>Mode</th>
                 <th>Power</th>
                 <th>Status</th>
-                <th>S-Meter</th>
+                <th id="meter-header">S-Meter</th>
             </tr>
         </thead>
         <tbody>
@@ -90,7 +90,7 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize S-meter scale markers
+            // S-meter scale markers (RX mode)
             const sLevels = [
                 { s: '1', db: -48 },
                 { s: '2', db: -43 },
@@ -106,17 +106,57 @@
                 { s: '+60', db: 60 }
             ];
 
-            const smeterMin = -60;
-            const smeterMax = 60;
-            const scaleHtml = sLevels.map(level => {
-                const percentage = ((level.db - smeterMin) / (smeterMax - smeterMin)) * 100;
-                return `<div class="smeter-mark" style="left: ${percentage}%;">
-                    <span class="smeter-mark-text">${level.s}</span>
-                    <span class="smeter-mark-line">|</span>
-                </div>`;
-            }).join('');
+            // SWR scale markers (TX mode)
+            // SWR values from 1.0 to 5.0 (represented as 10 to 50 in backend)
+            const swrLevels = [
+                { s: '1.0', swr: 10 },
+                { s: '1.5', swr: 15 },
+                { s: '2.0', swr: 20 },
+                { s: '2.5', swr: 25 },
+                { s: '3.0', swr: 30 },
+                { s: '3.5', swr: 35 },
+                { s: '4.0', swr: 40 },
+                { s: '4.5', swr: 45 },
+                { s: '5.0', swr: 50 }
+            ];
 
-            $('.smeter-scale').html(scaleHtml);
+            let currentMode = null; // Track current mode (start with null to force initial render)
+
+            function updateScale(mode) {
+                if (mode === currentMode) return; // No change needed
+                currentMode = mode;
+
+                if (mode === 'TX') {
+                    // SWR scale (1.0 to 5.0)
+                    $('#meter-header').text('SWR');
+                    const swrMin = 10;  // SWR 1.0
+                    const swrMax = 50;  // SWR 5.0
+                    const scaleHtml = swrLevels.map(level => {
+                        const percentage = ((level.swr - swrMin) / (swrMax - swrMin)) * 100;
+                        return `<div class="smeter-mark" style="left: ${percentage}%;">
+                            <span class="smeter-mark-text">${level.s}</span>
+                            <span class="smeter-mark-line">|</span>
+                        </div>`;
+                    }).join('');
+                    $('.smeter-scale').html(scaleHtml);
+                } else {
+                    // S-meter scale (-60 to +60 dB)
+                    $('#meter-header').text('S-Meter');
+                    const smeterMin = -60;
+                    const smeterMax = 60;
+                    const scaleHtml = sLevels.map(level => {
+                        const percentage = ((level.db - smeterMin) / (smeterMax - smeterMin)) * 100;
+                        return `<div class="smeter-mark" style="left: ${percentage}%;">
+                            <span class="smeter-mark-text">${level.s}</span>
+                            <span class="smeter-mark-line">|</span>
+                        </div>`;
+                    }).join('');
+                    $('.smeter-scale').html(scaleHtml);
+                }
+            }
+
+            // Initialize with RX scale
+            updateScale('RX');
 
             // Initialize Socket.IO connection
             const socket = io();
@@ -183,16 +223,36 @@
                     $('#rig-ptt').text(data.ptt)
                         .removeClass('tx-active rx-active rig-unavailable')
                         .addClass(data.ptt === 'TX' ? 'tx-active' : 'rx-active');
+
+                    // Update scale when PTT changes
+                    updateScale(data.ptt);
                 }
                 if (data.smeter) {
                     const smeterValue = parseInt(data.smeter);
-                    const smeterMin = -60;
-                    const smeterMax = 60;
-                    const percentage = Math.max(0, Math.min(100, ((smeterValue - smeterMin) / (smeterMax - smeterMin)) * 100));
 
-                    $('#smeter-text').text(smeterValue + ' dB').removeClass('rig-unavailable');
-                    $('#smeter-bar').css('width', percentage + '%');
-                    $('#rig-smeter').removeClass('rig-unavailable');
+                    // Determine if we're in TX or RX mode to display correctly
+                    const pttState = $('#rig-ptt').text();
+
+                    if (pttState === 'TX') {
+                        // TX mode - display as SWR (value is x10, so divide by 10)
+                        const swrValue = smeterValue / 10;
+                        const swrMin = 1.0;  // SWR 1.0
+                        const swrMax = 5.0;  // SWR 5.0
+                        const percentage = Math.max(0, Math.min(100, ((swrValue - swrMin) / (swrMax - swrMin)) * 100));
+
+                        $('#smeter-text').text(swrValue.toFixed(1) + ':1').removeClass('rig-unavailable');
+                        $('#smeter-bar').css('width', percentage + '%');
+                        $('#rig-smeter').removeClass('rig-unavailable');
+                    } else {
+                        // RX mode - display as S-meter (dB)
+                        const smeterMin = -60;
+                        const smeterMax = 60;
+                        const percentage = Math.max(0, Math.min(100, ((smeterValue - smeterMin) / (smeterMax - smeterMin)) * 100));
+
+                        $('#smeter-text').text(smeterValue + ' dB').removeClass('rig-unavailable');
+                        $('#smeter-bar').css('width', percentage + '%');
+                        $('#rig-smeter').removeClass('rig-unavailable');
+                    }
                 }
             });
 
