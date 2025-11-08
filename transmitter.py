@@ -342,11 +342,11 @@ def parse_schedule(file_path):
                 start_date = datetime.strptime(row['Start Date'], "%d.%m.%Y")
                 end_date = datetime.strptime(row['End Date'], "%d.%m.%Y")
                 start_time = datetime.strptime(row['Start Time'], "%H:%M").time()
-                duration_minutes = int(row['Duration (minutes)'])
+                duration_minutes = int(float(row['Duration (minutes)']))
                 frequency = float(row['Frequency (MHz)'].replace(',', '.'))
                 mode = row['Mode']
-                power = int(row['Power (W)']) if row['Power (W)'].strip() else 5
-                pause = int(row['Pause (sec)']) if row['Pause (sec)'].strip() else 60
+                power = int(float(row['Power (W)'])) if row['Power (W)'].strip() else 5
+                pause = int(float(row['Pause (sec)'])) if row['Pause (sec)'].strip() else 60
 
                 # Validate - skip invalid rows silently (user is an idiot)
                 if duration_minutes <= 0:
