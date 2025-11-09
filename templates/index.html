@@ -240,7 +240,7 @@
                         const swrMax = 5.0;  // SWR 5.0
                         const percentage = Math.max(0, Math.min(100, ((swrValue - swrMin) / (swrMax - swrMin)) * 100));
 
-                        $('#smeter-text').text(swrValue.toFixed(1) + ':1').removeClass('rig-unavailable');
+                        $('#smeter-text').text(swrValue.toFixed(1)).removeClass('rig-unavailable');
                         $('#smeter-bar').css('width', percentage + '%');
                         $('#rig-smeter').removeClass('rig-unavailable');
                     } else {
