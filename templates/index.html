@@ -249,7 +249,7 @@
                         const smeterMax = 60;
                         const percentage = Math.max(0, Math.min(100, ((smeterValue - smeterMin) / (smeterMax - smeterMin)) * 100));
 
-                        $('#smeter-text').text(smeterValue + ' dB').removeClass('rig-unavailable');
+                        $('#smeter-text').text(smeterValue).removeClass('rig-unavailable');
                         $('#smeter-bar').css('width', percentage + '%');
                         $('#rig-smeter').removeClass('rig-unavailable');
                     }
