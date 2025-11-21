@@ -143,3 +143,66 @@ Start rigctld manually for testing:
 ```bash
 rigctld -m 1  # dummy rig for testing
 ```
+
+## rigctld Service (USB Hotplug)
+
+The repository includes a systemd template service for rigctld with automatic USB hotplug support. When you connect your radio's USB interface, the service starts automatically. When disconnected, it stops.
+
+### Installation
+
+```bash
+# 1. Install systemd service
+sudo cp rigctld@.service /etc/systemd/system/
+sudo systemctl daemon-reload
+
+# 2. Install udev rules for USB hotplug
+sudo cp 99-rigctld.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+
+# 3. Run setup script to configure your radio
+sudo ./rigctld-setup
+```
+
+### How it works
+
+1. **USB connected**: udev detects the device, creates `/dev/rig_<SERIAL>` symlink, and starts `rigctld@<SERIAL>.service`
+2. **USB disconnected**: udev stops the service automatically
+3. **No config**: If `/etc/default/rigctld.<SERIAL>` doesn't exist, service exits silently (no spam in logs)
+
+### Setup new radio
+
+Run the interactive setup script:
+```bash
+sudo ./rigctld-setup
+```
+
+The script will:
+- Scan for available USB serial devices
+- Let you select the device by serial number
+- Ask for Hamlib RIG_ID (model number)
+- Create configuration file
+- Enable the systemd service
+
+### Manual operation
+
+```bash
+# Start/stop with custom name (requires /etc/default/rigctld.<name>)
+sudo systemctl start rigctld@ft817.service
+sudo systemctl stop rigctld@ft817.service
+
+# Check status
+sudo systemctl status rigctld@016F27AA.service
+```
+
+### Configuration file
+
+Location: `/etc/default/rigctld.<SERIAL>` or `/etc/default/rigctld.<name>`
+
+```bash
+RIG_ID=1035
+PORT=/dev/rig_016F27AA
+```
+
+### Supported devices
+
+The included udev rules support Silicon Labs CP2105 Dual UART Bridge (common in Yaesu and other radios). Edit `99-rigctld.rules` to add support for other USB serial adapters.
