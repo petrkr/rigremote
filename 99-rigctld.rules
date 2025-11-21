@@ -1,0 +1,18 @@
+# Udev rules for automatic rigctld service management
+# Install to: /etc/udev/rules.d/99-rigctld.rules
+#
+# This rule handles Silicon Labs CP2105 Dual UART Bridge (common in HAM radio interfaces)
+# Adjust ID_VENDOR_ID and ID_MODEL_ID for other USB serial adapters
+#
+# When a matching device is connected:
+#   - Creates symlink /dev/rig_<SERIAL> for consistent device naming
+#   - Starts rigctld@<SERIAL>.service (only if /etc/default/rigctld.<SERIAL> exists)
+#
+# When device is disconnected:
+#   - Stops the corresponding rigctld service
+
+# CP2105 Silicon Labs - connect: create symlink and start service
+ACTION=="add", SUBSYSTEM=="tty", ENV{ID_VENDOR_ID}=="10c4", ENV{ID_MODEL_ID}=="ea70", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="rig_%E{ID_SERIAL_SHORT}", TAG+="systemd", ENV{SYSTEMD_WANTS}="rigctld@%E{ID_SERIAL_SHORT}.service"
+
+# CP2105 Silicon Labs - disconnect: stop service
+ACTION=="remove", SUBSYSTEM=="tty", ENV{ID_VENDOR_ID}=="10c4", ENV{ID_MODEL_ID}=="ea70", ENV{ID_USB_INTERFACE_NUM}=="00", RUN+="/bin/systemctl stop rigctld@%E{ID_SERIAL_SHORT}.service"
