@@ -5,6 +5,7 @@ After=network.target
 
 [Service]
 ExecCondition=/bin/test -f /etc/default/rigctld.%i
+ExecCondition=/bin/sh -c ". /etc/default/rigctld.%i && test -e ${PORT:-/dev/ttyUSB0}"
 EnvironmentFile=-/etc/default/rigctld.%i
 ExecStart=/bin/sh -c "/usr/bin/rigctld -m ${RIG_ID} -r ${PORT:-/dev/ttyUSB0}"
 Restart=on-failure
