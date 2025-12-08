@@ -438,6 +438,12 @@ def generate_sstv():
                 pass
             return redirect(request.url)
 
+    # Prepare mode dimensions for JavaScript
+    mode_dimensions = {
+        mode_name: {'width': mode_class.WIDTH, 'height': mode_class.HEIGHT}
+        for mode_name, mode_class in sstv_modes.items()
+    }
+
     # GET request - show form
     return render_template('generate_sstv.html',
                          modes=list(sstv_modes.keys()),
@@ -446,7 +452,8 @@ def generate_sstv():
                          default_vox=default_vox,
                          resize_enabled=resize_enabled,
                          default_resize_strategy=default_resize_strategy,
-                         default_resample=default_resample)
+                         default_resample=default_resample,
+                         mode_dimensions=mode_dimensions)
 
 
 def initialize_rig(rig_address):
