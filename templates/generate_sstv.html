@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSTV Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"],
+        .form-group select {
+            width: 300px;
+            padding: 5px;
+        }
+        .form-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        #image-preview {
+            max-width: 320px;
+            max-height: 256px;
+            margin-top: 10px;
+            display: block;
+            border: 1px solid #ccc;
+        }
+        #image-preview.hidden {
+            display: none;
+        }
+        .preview-container {
+            margin-top: 10px;
+        }
+        #fskid-group {
+            margin-left: 25px;
+            display: none;
+        }
+        #target-folder-group {
+            margin-left: 25px;
+            display: none;
+        }
+        .info-box {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>SSTV Audio Generator</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="info-box">
+        <strong>Info:</strong> Upload an image file and configure SSTV parameters to generate audio for transmission.
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="sstv-form">
+        <div class="form-group">
+            <label for="image_file">Image File (PNG, JPG, BMP, GIF):</label>
+            <input type="file" name="image_file" id="image_file" accept=".png,.jpg,.jpeg,.bmp,.gif" required>
+            <div class="preview-container">
+                <img id="image-preview" class="hidden" alt="Image preview">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="mode">SSTV Mode:</label>
+            <select name="mode" id="mode" required>
+                {% for mode in modes %}
+                    <option value="{{ mode }}" {% if mode == default_mode %}selected{% endif %}>{{ mode }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="vox" id="vox" {% if default_vox %}checked{% endif %}>
+                Enable VOX tones (recommended)
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="fskid_enabled" id="fskid_enabled">
+                Add FSKID callsign
+            </label>
+            <div id="fskid-group" class="form-group">
+                <label for="fskid_text">Callsign:</label>
+                <input type="text" name="fskid_text" id="fskid_text" placeholder="e.g., OK1ABC" maxlength="20">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="copy_to_folder" id="copy_to_folder">
+                Save to transmission folder
+            </label>
+            <div id="target-folder-group" class="form-group">
+                <label for="target_folder">Target Folder:</label>
+                <select name="target_folder" id="target_folder">
+                    <option value="">-- Select folder --</option>
+                    {% for folder in folders %}
+                        <option value="{{ folder }}">{{ folder }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="submit">Generate SSTV Audio</button>
+            <a href="{{ url_for('index') }}"><button type="button">Cancel</button></a>
+        </div>
+    </form>
+
+    <script>
+        $(document).ready(function() {
+            // Show/hide FSKID text field based on checkbox
+            $('#fskid_enabled').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#fskid-group').show();
+                } else {
+                    $('#fskid-group').hide();
+                }
+            });
+
+            // Show/hide target folder based on checkbox
+            $('#copy_to_folder').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#target-folder-group').show();
+                } else {
+                    $('#target-folder-group').hide();
+                }
+            });
+
+            // Image preview
+            $('#image_file').change(function(event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#image-preview').attr('src', e.target.result).removeClass('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#image-preview').addClass('hidden');
+                }
+            });
+
+            // Form validation
+            $('#sstv-form').submit(function(event) {
+                var copyToFolder = $('#copy_to_folder').is(':checked');
+                var targetFolder = $('#target_folder').val();
+
+                if (copyToFolder && !targetFolder) {
+                    alert('Please select a target folder or uncheck "Save to transmission folder"');
+                    event.preventDefault();
+                    return false;
+                }
+
+                var fskidEnabled = $('#fskid_enabled').is(':checked');
+                var fskidText = $('#fskid_text').val().trim();
+
+                if (fskidEnabled && !fskidText) {
+                    alert('Please enter a callsign for FSKID or uncheck "Add FSKID callsign"');
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

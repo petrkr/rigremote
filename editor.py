@@ -8,6 +8,17 @@ import time
 import threading
 import yaml
 import Hamlib
+import tempfile
+from werkzeug.utils import secure_filename
+from PIL import Image
+
+# Try to import pysstv
+try:
+    import pysstv.color
+    import pysstv.grayscale
+    PYSSTV_AVAILABLE = True
+except ImportError:
+    PYSSTV_AVAILABLE = False
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -33,7 +44,7 @@ current_rig_status = {'status': 'unavailable'}
 @app.route('/')
 def index():
     folders = [f for f in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR, f))]
-    return render_template('index.html', folders=folders)
+    return render_template('index.html', folders=folders, pysstv_available=PYSSTV_AVAILABLE)
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_folder():
@@ -172,6 +183,178 @@ def get_server_time():
         "utc_offset": now.strftime("UTC%z"),
         "timestamp": now.timestamp()
     })
+
+# Route to Generate SSTV Audio
+@app.route('/generate_sstv', methods=['GET', 'POST'])
+def generate_sstv():
+    if not PYSSTV_AVAILABLE:
+        flash('SSTV generator is not available. Please install pysstv.', 'error')
+        return redirect(url_for('index'))
+
+    # Get SSTV modes mapping
+    sstv_modes = {
+        'MartinM1': pysstv.color.MartinM1,
+        'MartinM2': pysstv.color.MartinM2,
+        'ScottieS1': pysstv.color.ScottieS1,
+        'ScottieS2': pysstv.color.ScottieS2,
+        'ScottieDX': pysstv.color.ScottieDX,
+        'Robot36': pysstv.color.Robot36,
+        'PasokonP3': pysstv.color.PasokonP3,
+        'PasokonP5': pysstv.color.PasokonP5,
+        'PasokonP7': pysstv.color.PasokonP7,
+        'PD90': pysstv.color.PD90,
+        'PD120': pysstv.color.PD120,
+        'PD160': pysstv.color.PD160,
+        'PD180': pysstv.color.PD180,
+        'PD240': pysstv.color.PD240,
+        'PD290': pysstv.color.PD290,
+        'WraaseSC2120': pysstv.color.WraaseSC2120,
+        'WraaseSC2180': pysstv.color.WraaseSC2180,
+        'Robot8BW': pysstv.grayscale.Robot8BW,
+        'Robot24BW': pysstv.grayscale.Robot24BW,
+    }
+
+    # Get list of folders
+    folders = [f for f in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR, f))]
+
+    # Get default values from config
+    sstv_config = CONFIG.get('sstv', {}) if CONFIG else {}
+    default_mode = sstv_config.get('mode', 'MartinM1')
+    default_vox = sstv_config.get('vox', True)
+    samples_per_sec = sstv_config.get('samples_per_sec', 48000)
+    bits = sstv_config.get('bits', 16)
+
+    if request.method == 'POST':
+        # Check if image file is present
+        if 'image_file' not in request.files:
+            flash('No image file provided', 'error')
+            return redirect(request.url)
+
+        file = request.files['image_file']
+        if file.filename == '':
+            flash('No image file selected', 'error')
+            return redirect(request.url)
+
+        # Validate file extension
+        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+            flash('Invalid image format. Please use PNG, JPG, JPEG, BMP, or GIF.', 'error')
+            return redirect(request.url)
+
+        # Get form parameters
+        mode = request.form.get('mode', default_mode)
+        vox = request.form.get('vox') == 'on'
+        fskid_enabled = request.form.get('fskid_enabled') == 'on'
+        fskid_text = request.form.get('fskid_text', '')
+        copy_to_folder = request.form.get('copy_to_folder') == 'on'
+        target_folder = request.form.get('target_folder', '')
+
+        # Validate mode
+        if mode not in sstv_modes:
+            flash(f'Invalid SSTV mode: {mode}', 'error')
+            return redirect(request.url)
+
+        try:
+            # Create temporary files
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_img:
+                tmp_img_path = tmp_img.name
+                file.save(tmp_img_path)
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_wav:
+                tmp_wav_path = tmp_wav.name
+
+            # Load and convert image to RGB if needed
+            img = Image.open(tmp_img_path)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            # Get the SSTV mode class
+            sstv_class = sstv_modes[mode]
+
+            # Create SSTV object
+            sstv_obj = sstv_class(img, samples_per_sec=samples_per_sec, bits=bits)
+
+            # Add VOX if requested
+            if vox:
+                sstv_obj.vox_enabled = True
+
+            # Add FSKID if requested
+            if fskid_enabled and fskid_text:
+                sstv_obj.add_fskid_text(fskid_text)
+
+            # Generate SSTV audio
+            sstv_obj.write_wav(tmp_wav_path)
+
+            # Clean up temp image file
+            os.unlink(tmp_img_path)
+
+            # Copy to target folder if requested
+            if copy_to_folder and target_folder:
+                base_dir = os.path.abspath(BASE_DIR)
+                safe_folder_path = os.path.abspath(os.path.join(base_dir, target_folder))
+
+                # Security check
+                if not safe_folder_path.startswith(base_dir):
+                    flash('Invalid target folder', 'error')
+                    os.unlink(tmp_wav_path)
+                    return redirect(request.url)
+
+                # Generate filename from original image name
+                base_filename = os.path.splitext(secure_filename(file.filename))[0]
+                output_filename = f"{base_filename}_{mode}.wav"
+                output_path = os.path.join(safe_folder_path, output_filename)
+
+                # Copy file
+                import shutil
+                shutil.copy2(tmp_wav_path, output_path)
+
+                # Clean up temp wav file
+                os.unlink(tmp_wav_path)
+
+                # Redirect to audio management page with success message
+                flash(f"SSTV audio file '{output_filename}' successfully generated and saved", 'success')
+                return redirect(url_for('manage_audio', folder_name=target_folder))
+            else:
+                # Send file to user for download
+                # Generate filename from original image name
+                base_filename = os.path.splitext(secure_filename(file.filename))[0]
+                download_filename = f"{base_filename}.wav"
+
+                response = send_from_directory(
+                    directory=os.path.dirname(tmp_wav_path),
+                    path=os.path.basename(tmp_wav_path),
+                    as_attachment=True,
+                    download_name=download_filename
+                )
+
+                # Clean up temp file after sending
+                @response.call_on_close
+                def cleanup():
+                    try:
+                        os.unlink(tmp_wav_path)
+                    except:
+                        pass
+
+                return response
+
+        except Exception as e:
+            flash(f'Error generating SSTV: {str(e)}', 'error')
+            # Clean up temp files on error
+            try:
+                os.unlink(tmp_img_path)
+            except:
+                pass
+            try:
+                os.unlink(tmp_wav_path)
+            except:
+                pass
+            return redirect(request.url)
+
+    # GET request - show form
+    return render_template('generate_sstv.html',
+                         modes=list(sstv_modes.keys()),
+                         folders=folders,
+                         default_mode=default_mode,
+                         default_vox=default_vox)
 
 
 def initialize_rig(rig_address):

@@ -64,6 +64,17 @@
         </tbody>
     </table>
 
+    <!-- SSTV Generator Link -->
+    {% if pysstv_available %}
+    <div style="margin: 20px 0;">
+        <a href="{{ url_for('generate_sstv') }}"><button type="button">Generate SSTV Audio</button></a>
+    </div>
+    {% else %}
+    <div style="margin: 20px 0; color: #888;">
+        SSTV Generator (pysstv not available)
+    </div>
+    {% endif %}
+
     <table id="folder-table">
         <thead>
             <tr>
