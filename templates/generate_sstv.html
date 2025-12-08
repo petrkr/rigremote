@@ -53,6 +53,18 @@
             font-size: 12px;
             color: #666;
         }
+        #progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 25px;
+        }
+        #progress-percentage {
+            margin-left: 10px;
+            font-weight: bold;
+        }
         #fskid-group {
             margin-left: 25px;
             display: none;
@@ -184,8 +196,14 @@
             </div>
         </div>
 
+        <div id="progress-container">
+            <progress id="progress-bar" value="0" max="100"></progress>
+            <span id="progress-percentage">0%</span>
+            <div id="progress-status" style="margin-top: 5px; font-size: 14px;"></div>
+        </div>
+
         <div class="form-group">
-            <button type="submit">Generate SSTV Audio</button>
+            <button type="submit" id="submit-button">Generate SSTV Audio</button>
             <a href="{{ url_for('index') }}"><button type="button">Cancel</button></a>
         </div>
     </form>
@@ -325,14 +343,16 @@
             // Update preview when mode, resize, or strategy changes
             $('#mode, #resize_enabled, input[name="resize_strategy"]').on('change', updateProcessedPreview);
 
-            // Form validation
+            // Form submission with progress bar
             $('#sstv-form').submit(function(event) {
+                event.preventDefault();
+
+                // Validation
                 var copyToFolder = $('#copy_to_folder').is(':checked');
                 var targetFolder = $('#target_folder').val();
 
                 if (copyToFolder && !targetFolder) {
                     alert('Please select a target folder or uncheck "Save to transmission folder"');
-                    event.preventDefault();
                     return false;
                 }
 
@@ -341,9 +361,88 @@
 
                 if (fskidEnabled && !fskidText) {
                     alert('Please enter a callsign for FSKID or uncheck "Add FSKID callsign"');
-                    event.preventDefault();
                     return false;
                 }
+
+                // Prepare form data
+                var formData = new FormData(this);
+
+                // Show progress bar
+                $('#progress-container').show();
+                $('#submit-button').prop('disabled', true);
+                $('#progress-status').text('Uploading image...');
+
+                var xhr = new XMLHttpRequest();
+
+                // Upload progress
+                xhr.upload.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        var percentComplete = (event.loaded / event.total) * 100;
+                        $('#progress-bar').val(percentComplete);
+                        $('#progress-percentage').text(Math.round(percentComplete) + '%');
+                    }
+                };
+
+                // Upload complete, processing
+                xhr.upload.onload = function() {
+                    $('#progress-bar').val(100);
+                    $('#progress-percentage').text('100%');
+                    $('#progress-status').text('Processing SSTV audio...');
+                };
+
+                // Request complete
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var contentType = xhr.getResponseHeader('Content-Type');
+                        var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+
+                        // Check if response is a file download
+                        if (contentDisposition && contentDisposition.includes('attachment')) {
+                            // Trigger download
+                            var blob = xhr.response;
+                            var url = window.URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = url;
+
+                            // Extract filename from Content-Disposition
+                            var filename = 'sstv_audio.wav';
+                            var filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                            if (filenameMatch) {
+                                filename = filenameMatch[1];
+                            }
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+
+                            $('#progress-status').text('Download complete!');
+                            setTimeout(function() {
+                                $('#progress-container').hide();
+                                $('#submit-button').prop('disabled', false);
+                            }, 2000);
+                        } else {
+                            // Redirect (copy to folder case)
+                            window.location.href = xhr.responseURL;
+                        }
+                    } else {
+                        $('#progress-status').text('Error: ' + xhr.status);
+                        $('#submit-button').prop('disabled', false);
+                    }
+                };
+
+                // Request error
+                xhr.onerror = function() {
+                    $('#progress-status').text('Error occurred during upload');
+                    $('#submit-button').prop('disabled', false);
+                };
+
+                // Send request
+                xhr.open('POST', $('#sstv-form').attr('action') || window.location.href, true);
+                xhr.responseType = 'blob';
+                xhr.send(formData);
+
+                return false;
             });
         });
     </script>
