@@ -171,6 +171,85 @@ def stream_audio(folder_name, file_name):
     else:
         abort(404)  # File not found
 
+def resize_image_for_sstv(image, mode_class, strategy='pad', resample='lanczos'):
+    """
+    Resize image to fit SSTV mode dimensions.
+
+    Args:
+        image: PIL Image object
+        mode_class: SSTV mode class (e.g., MartinM1)
+        strategy: 'stretch', 'crop', or 'pad'
+        resample: 'nearest', 'bicubic', or 'lanczos'
+
+    Returns:
+        Resized PIL Image object
+    """
+    target_width = mode_class.WIDTH
+    target_height = mode_class.HEIGHT
+
+    # Get resampling method from PIL
+    resample_methods = {
+        'nearest': Image.NEAREST,
+        'bicubic': Image.BICUBIC,
+        'lanczos': Image.LANCZOS
+    }
+    resample_method = resample_methods.get(resample.lower(), Image.LANCZOS)
+
+    # If image is already the correct size, return as-is
+    if image.size == (target_width, target_height):
+        return image
+
+    if strategy == 'stretch':
+        # Simply stretch/squeeze to target size
+        return image.resize((target_width, target_height), resample_method)
+
+    # Calculate aspect ratios
+    orig_ratio = image.width / image.height
+    target_ratio = target_width / target_height
+
+    if strategy == 'crop':
+        # Keep aspect ratio and crop excess
+        if orig_ratio > target_ratio:
+            # Image is wider - fit to height and crop width
+            new_height = target_height
+            new_width = int(orig_ratio * new_height)
+        else:
+            # Image is taller - fit to width and crop height
+            new_width = target_width
+            new_height = int(new_width / orig_ratio)
+
+        # Resize
+        resized = image.resize((new_width, new_height), resample_method)
+
+        # Crop from center
+        left = (new_width - target_width) // 2
+        top = (new_height - target_height) // 2
+        return resized.crop((left, top, left + target_width, top + target_height))
+
+    elif strategy == 'pad':
+        # Keep aspect ratio and add black padding
+        if orig_ratio > target_ratio:
+            # Image is wider - fit to width and pad height
+            new_width = target_width
+            new_height = int(new_width / orig_ratio)
+        else:
+            # Image is taller - fit to height and pad width
+            new_height = target_height
+            new_width = int(orig_ratio * new_height)
+
+        # Resize
+        resized = image.resize((new_width, new_height), resample_method)
+
+        # Create black background and paste resized image centered
+        result = Image.new('RGB', (target_width, target_height), (0, 0, 0))
+        left = (target_width - new_width) // 2
+        top = (target_height - new_height) // 2
+        result.paste(resized, (left, top))
+        return result
+
+    # Default: return original
+    return image
+
 # API endpoint to get server time
 @app.route('/api/server_time')
 def get_server_time():
@@ -223,6 +302,9 @@ def generate_sstv():
     default_vox = sstv_config.get('vox', True)
     samples_per_sec = sstv_config.get('samples_per_sec', 48000)
     bits = sstv_config.get('bits', 16)
+    resize_enabled = sstv_config.get('resize', True)
+    default_resize_strategy = sstv_config.get('resize_strategy', 'pad')
+    default_resample = sstv_config.get('resample', 'lanczos')
 
     if request.method == 'POST':
         # Check if image file is present
@@ -247,6 +329,9 @@ def generate_sstv():
         fskid_text = request.form.get('fskid_text', '')
         copy_to_folder = request.form.get('copy_to_folder') == 'on'
         target_folder = request.form.get('target_folder', '')
+        user_resize_enabled = request.form.get('resize_enabled') == 'on'
+        resize_strategy = request.form.get('resize_strategy', default_resize_strategy) if user_resize_enabled else None
+        resample_method = request.form.get('resample', default_resample)
 
         # Validate mode
         if mode not in sstv_modes:
@@ -269,6 +354,10 @@ def generate_sstv():
 
             # Get the SSTV mode class
             sstv_class = sstv_modes[mode]
+
+            # Resize image if user enabled it
+            if user_resize_enabled and resize_strategy:
+                img = resize_image_for_sstv(img, sstv_class, resize_strategy, resample_method)
 
             # Create SSTV object
             sstv_obj = sstv_class(img, samples_per_sec=samples_per_sec, bits=bits)
@@ -354,7 +443,10 @@ def generate_sstv():
                          modes=list(sstv_modes.keys()),
                          folders=folders,
                          default_mode=default_mode,
-                         default_vox=default_vox)
+                         default_vox=default_vox,
+                         resize_enabled=resize_enabled,
+                         default_resize_strategy=default_resize_strategy,
+                         default_resample=default_resample)
 
 
 def initialize_rig(rig_address):

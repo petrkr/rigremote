@@ -44,6 +44,18 @@
             margin-left: 25px;
             display: none;
         }
+        #resize-options {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+        .radio-group {
+            margin: 10px 0;
+        }
+        .radio-group label {
+            display: block;
+            margin: 5px 0;
+            font-weight: normal;
+        }
         .info-box {
             background-color: #f0f0f0;
             padding: 10px;
@@ -94,6 +106,30 @@
 
         <div class="form-group">
             <label>
+                <input type="checkbox" name="resize_enabled" id="resize_enabled" {% if resize_enabled %}checked{% endif %}>
+                Resize image to fit SSTV mode
+            </label>
+            <div class="form-group" id="resize-options" style="{% if not resize_enabled %}display: none;{% endif %}">
+                <strong>Resize Strategy:</strong>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="resize_strategy" value="pad" {% if default_resize_strategy == 'pad' %}checked{% endif %}>
+                        Keep aspect ratio with padding (add black bars) - recommended
+                    </label>
+                    <label>
+                        <input type="radio" name="resize_strategy" value="crop" {% if default_resize_strategy == 'crop' %}checked{% endif %}>
+                        Keep aspect ratio with cropping (cut excess)
+                    </label>
+                    <label>
+                        <input type="radio" name="resize_strategy" value="stretch" {% if default_resize_strategy == 'stretch' %}checked{% endif %}>
+                        Stretch to fit (may distort image)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
                 <input type="checkbox" name="fskid_enabled" id="fskid_enabled">
                 Add FSKID callsign
             </label>
@@ -127,6 +163,15 @@
 
     <script>
         $(document).ready(function() {
+            // Show/hide resize options based on checkbox
+            $('#resize_enabled').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#resize-options').show();
+                } else {
+                    $('#resize-options').hide();
+                }
+            });
+
             // Show/hide FSKID text field based on checkbox
             $('#fskid_enabled').change(function() {
                 if ($(this).is(':checked')) {
