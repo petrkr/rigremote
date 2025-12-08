@@ -298,11 +298,11 @@ def generate_sstv():
 
     # Get default values from config
     sstv_config = CONFIG.get('sstv', {}) if CONFIG else {}
-    default_mode = sstv_config.get('mode', 'MartinM1')
+    default_mode = sstv_config.get('mode', 'PD120')
     default_vox = sstv_config.get('vox', True)
-    samples_per_sec = sstv_config.get('samples_per_sec', 48000)
+    samples_per_sec = sstv_config.get('samples_per_sec', 11025)
     bits = sstv_config.get('bits', 16)
-    resize_enabled = sstv_config.get('resize', True)
+    resize_enabled = sstv_config.get('resize', False)
     default_resize_strategy = sstv_config.get('resize_strategy', 'pad')
     default_resample = sstv_config.get('resample', 'lanczos')
 
