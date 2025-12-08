@@ -411,9 +411,9 @@ def generate_sstv():
                 return redirect(url_for('manage_audio', folder_name=target_folder))
             else:
                 # Send file to user for download
-                # Generate filename from original image name
+                # Generate filename from original image name and mode
                 base_filename = os.path.splitext(secure_filename(file.filename))[0]
-                download_filename = f"{base_filename}.wav"
+                download_filename = f"{base_filename}_{mode}.wav"
 
                 response = send_from_directory(
                     directory=os.path.dirname(tmp_wav_path),
