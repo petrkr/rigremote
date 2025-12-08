@@ -320,6 +320,36 @@
                 }
             }
 
+            // Function to check if image size is valid
+            function checkImageSize() {
+                const img = $('#image-preview-original')[0];
+                if (!img.src || !img.complete) return;
+
+                const mode = $('#mode').val();
+                const resizeEnabled = $('#resize_enabled').is(':checked');
+
+                if (!mode || !modeDimensions[mode]) {
+                    $('#original-info').text(img.naturalWidth + ' × ' + img.naturalHeight + ' px');
+                    $('#original-info').css('color', '#666');
+                    return;
+                }
+
+                const targetWidth = modeDimensions[mode].width;
+                const targetHeight = modeDimensions[mode].height;
+
+                if (resizeEnabled) {
+                    // If resize is enabled, any size is OK
+                    $('#original-info').text(img.naturalWidth + ' × ' + img.naturalHeight + ' px (✓ Will be resized to ' + targetWidth + '×' + targetHeight + ')');
+                    $('#original-info').css('color', 'green');
+                } else if (img.naturalWidth < targetWidth || img.naturalHeight < targetHeight) {
+                    $('#original-info').text(img.naturalWidth + ' × ' + img.naturalHeight + ' px (⚠️ TOO SMALL for ' + mode + ', need ' + targetWidth + '×' + targetHeight + ')');
+                    $('#original-info').css('color', 'red');
+                } else {
+                    $('#original-info').text(img.naturalWidth + ' × ' + img.naturalHeight + ' px (✓ OK for ' + mode + ')');
+                    $('#original-info').css('color', 'green');
+                }
+            }
+
             // Image file change handler
             $('#image_file').change(function(event) {
                 var file = event.target.files[0];
@@ -328,8 +358,8 @@
                     reader.onload = function(e) {
                         const img = $('#image-preview-original')[0];
                         img.onload = function() {
-                            $('#original-info').text(img.naturalWidth + ' × ' + img.naturalHeight + ' px');
                             $('#preview-container').addClass('visible');
+                            checkImageSize();
                             updateProcessedPreview();
                         };
                         img.src = e.target.result;
@@ -341,7 +371,10 @@
             });
 
             // Update preview when mode, resize, or strategy changes
-            $('#mode, #resize_enabled, input[name="resize_strategy"]').on('change', updateProcessedPreview);
+            $('#mode, #resize_enabled, input[name="resize_strategy"]').on('change', function() {
+                checkImageSize();
+                updateProcessedPreview();
+            });
 
             // Form submission with progress bar
             $('#sstv-form').submit(function(event) {

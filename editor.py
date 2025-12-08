@@ -355,6 +355,13 @@ def generate_sstv():
             # Get the SSTV mode class
             sstv_class = sstv_modes[mode]
 
+            # Validate image size if resize is not enabled
+            if not user_resize_enabled:
+                if img.width < sstv_class.WIDTH or img.height < sstv_class.HEIGHT:
+                    flash(f'Image is too small for {mode}. Image must be at least {sstv_class.WIDTH}×{sstv_class.HEIGHT} pixels. Your image is {img.width}×{img.height} pixels. Please enable "Resize image to fit SSTV mode" or use a larger image.', 'error')
+                    os.unlink(tmp_img_path)
+                    return redirect(request.url)
+
             # Resize image if user enabled it
             if user_resize_enabled and resize_strategy:
                 img = resize_image_for_sstv(img, sstv_class, resize_strategy, resample_method)
