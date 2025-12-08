@@ -119,7 +119,9 @@
             <label for="mode">SSTV Mode:</label>
             <select name="mode" id="mode" required>
                 {% for mode in modes %}
-                    <option value="{{ mode }}" {% if mode == default_mode %}selected{% endif %}>{{ mode }}</option>
+                    <option value="{{ mode }}" {% if mode == default_mode %}selected{% endif %}>
+                        {{ mode }} ({{ mode_dimensions[mode].width }}×{{ mode_dimensions[mode].height }})
+                    </option>
                 {% endfor %}
             </select>
         </div>
