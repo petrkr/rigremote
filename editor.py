@@ -10,10 +10,10 @@ import yaml
 import Hamlib
 import tempfile
 from werkzeug.utils import secure_filename
-from PIL import Image
 
-# Try to import pysstv
+# Try to import pysstv and PIL
 try:
+    from PIL import Image
     import pysstv.color
     import pysstv.grayscale
     PYSSTV_AVAILABLE = True
