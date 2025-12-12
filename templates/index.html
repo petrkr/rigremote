@@ -89,8 +89,9 @@
             <tr>
                 <td>{{ folder }}</td>
                 <td>
-                    <a href="{{ url_for('edit_schedule', folder_name=folder) }}">Edit Schedule</a> |
-                    <a href="{{ url_for('manage_audio', folder_name=folder) }}">Manage Audio Files</a>
+                    <a href="{{ url_for('edit_schedule', folder_name=folder) }}"><button type="button">Edit Schedule</button></a>
+                    <a href="{{ url_for('manage_audio', folder_name=folder) }}"><button type="button">Manage Audio</button></a>
+                    <button type="button" class="delete-folder-button" data-folder="{{ folder }}">Delete</button>
                 </td>
             </tr>
             {% endfor %}
@@ -272,6 +273,36 @@
             socket.on('connect_error', function(error) {
                 console.log('WebSocket connection error:', error);
                 // Don't change status - disconnect event already handled it
+            });
+
+            // Delete folder functionality
+            $(document).on('click', '.delete-folder-button', function() {
+                var folderName = $(this).data('folder');
+                var row = $(this).closest('tr');
+
+                if (confirm('Are you sure you want to delete folder "' + folderName + '"?\n\nThis will permanently delete the folder and all its contents (schedule and audio files).')) {
+                    $.ajax({
+                        url: '/delete_folder/' + encodeURIComponent(folderName),
+                        type: 'POST',
+                        success: function(response) {
+                            if (response.success) {
+                                alert(response.message);
+                                row.fadeOut(300, function() {
+                                    $(this).remove();
+                                });
+                            } else {
+                                alert('Error: ' + response.error);
+                            }
+                        },
+                        error: function(xhr) {
+                            var errorMsg = 'An error occurred while deleting the folder.';
+                            if (xhr.responseJSON && xhr.responseJSON.error) {
+                                errorMsg = xhr.responseJSON.error;
+                            }
+                            alert('Error: ' + errorMsg);
+                        }
+                    });
+                }
             });
         });
     </script>

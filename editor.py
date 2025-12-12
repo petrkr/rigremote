@@ -152,6 +152,35 @@ def delete_audio_file(folder_name, file_name):
 
     return redirect(url_for('manage_audio', folder_name=folder_name))
 
+# Route to Delete Folder
+@app.route('/delete_folder/<folder_name>', methods=['POST'])
+def delete_folder(folder_name):
+    base_dir = os.path.abspath(BASE_DIR)
+
+    # Securely join paths
+    safe_folder_path = os.path.abspath(os.path.join(base_dir, folder_name))
+
+    # Check if the path is within the base directory
+    if not safe_folder_path.startswith(base_dir):
+        return jsonify({'success': False, 'error': 'Invalid folder path'}), 403
+
+    # Check if folder exists
+    if not os.path.exists(safe_folder_path):
+        return jsonify({'success': False, 'error': 'Folder does not exist'}), 404
+
+    # Check if it's actually a directory
+    if not os.path.isdir(safe_folder_path):
+        return jsonify({'success': False, 'error': 'Path is not a directory'}), 400
+
+    try:
+        import shutil
+        shutil.rmtree(safe_folder_path)
+        return jsonify({'success': True, 'message': f'Folder "{folder_name}" deleted successfully'})
+    except PermissionError:
+        return jsonify({'success': False, 'error': 'Permission denied'}), 403
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Route to stream audio files
 @app.route('/stream_audio/<folder_name>/<file_name>')
 def stream_audio(folder_name, file_name):

@@ -157,3 +157,12 @@ a:hover {
     text-shadow: 1px 1px 2px black;
     z-index: 1;
 }
+
+/* Delete button styling */
+.delete-folder-button {
+    background-color: #d9534f;
+}
+
+.delete-folder-button:hover {
+    background-color: #c9302c;
+}
