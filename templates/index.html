@@ -9,7 +9,7 @@
     <script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
 </head>
 <body>
-    <h1>Available Folders</h1>
+    <h1>HAM Radio Remote Control</h1>
 
     <!-- WebSocket Status -->
     <div style="margin-bottom: 10px;">
@@ -74,6 +74,8 @@
         SSTV Generator (pysstv not available)
     </div>
     {% endif %}
+
+    <h2>Transmission Sets</h2>
 
     <table id="folder-table">
         <thead>
