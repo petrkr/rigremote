@@ -201,8 +201,9 @@ Location: `/etc/default/rigctld.<SERIAL>` or `/etc/default/rigctld.<name>`
 ```bash
 RIG_ID=1035
 RIG_DEVICE=/dev/rig_016F27AA
+# Optional, otherwise rigctld defaults are used
 TCP_PORT=4532
-LISTEN_ADDR=127.0.0.1
+LISTEN_ADDR=0.0.0.0
 ```
 
 ### Supported devices
