@@ -200,9 +200,11 @@ Location: `/etc/default/rigctld.<SERIAL>` or `/etc/default/rigctld.<name>`
 
 ```bash
 RIG_ID=1035
-PORT=/dev/rig_016F27AA
+RIG_DEVICE=/dev/rig_016F27AA
+TCP_PORT=4532
+LISTEN_ADDR=127.0.0.1
 ```
 
 ### Supported devices
 
-The included udev rules support Silicon Labs CP2105 Dual UART Bridge (common in Yaesu and other radios). Edit `99-rigctld.rules` to add support for other USB serial adapters.
+The included udev rules support Silicon Labs CP2105 Dual UART Bridge and Prolific PL2303 USB serial adapters. Edit `99-rigctld.rules` to add support for other USB serial adapters.
