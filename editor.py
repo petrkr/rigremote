@@ -41,6 +41,54 @@ CONFIG = load_config()
 # Global cache for current rig status
 current_rig_status = {'status': 'unavailable'}
 
+
+def format_tx_tone(rig):
+    """Return compact TX tone status for UI."""
+    tone_enabled = False
+    ctcss_tone = 0
+    dcs_code = 0
+
+    try:
+        tone_enabled = rig.get_func(Hamlib.RIG_FUNC_TONE) == 1
+        if rig.error_status not in (0, -11):
+            raise Exception(f"Rig error after get_func TONE: {rig.error_status}")
+    except Exception:
+        if rig.error_status not in (0, -11):
+            raise
+
+    try:
+        ctcss_tone = rig.get_ctcss_tone()
+        if rig.error_status == -11:
+            ctcss_tone = 0
+        elif rig.error_status != 0:
+            raise Exception(f"Rig error after get_ctcss_tone: {rig.error_status}")
+    except Exception:
+        if rig.error_status not in (0, -11):
+            raise
+        ctcss_tone = 0
+
+    try:
+        dcs_code = rig.get_dcs_code()
+        if rig.error_status == -11:
+            dcs_code = 0
+        elif rig.error_status != 0:
+            raise Exception(f"Rig error after get_dcs_code: {rig.error_status}")
+    except Exception:
+        if rig.error_status not in (0, -11):
+            raise
+        dcs_code = 0
+
+    if dcs_code and dcs_code > 0:
+        return f"DCS {int(dcs_code):03d}"
+
+    if tone_enabled and ctcss_tone and ctcss_tone > 0:
+        return f"CTCSS {ctcss_tone / 10:.1f}"
+
+    if tone_enabled:
+        return "On"
+
+    return "Off"
+
 @app.route('/')
 def index():
     folders = [f for f in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR, f))]
@@ -542,6 +590,7 @@ def background_rig_status():
 
     rig = None
     last_frequency = None
+    last_tone = None
     last_mode = None
     last_power = None
     last_ptt = None
@@ -590,6 +639,8 @@ def background_rig_status():
 
             if mode is None or not isinstance(mode, int):
                 raise Exception(f"Invalid mode value: {mode}")
+
+            tone = format_tx_tone(rig)
 
             power_level = rig.get_level_f(Hamlib.RIG_LEVEL_RFPOWER)
             if rig.error_status != 0:
@@ -645,6 +696,10 @@ def background_rig_status():
                 update['frequency'] = f"{frequency:.3f}"
                 last_frequency = frequency
 
+            if tone != last_tone:
+                update['tone'] = tone
+                last_tone = tone
+
             if mode != last_mode:
                 # Convert Hamlib mode constants to string
                 mode_names = {
@@ -687,6 +742,7 @@ def background_rig_status():
             current_rig_status = {
                 'status': 'connected',
                 'frequency': f"{frequency:.3f}",
+                'tone': tone,
                 'mode': mode_str,
                 'power': str(power),
                 'ptt': 'TX' if ptt == Hamlib.RIG_PTT_ON else 'RX',
@@ -717,6 +773,7 @@ def background_rig_status():
 
             # Reset tracking variables so full update is sent on reconnect
             last_frequency = None
+            last_tone = None
             last_mode = None
             last_power = None
             last_ptt = None

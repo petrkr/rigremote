@@ -39,6 +39,7 @@
         <thead>
             <tr>
                 <th>Frequency</th>
+                <th>Tone</th>
                 <th>Mode</th>
                 <th>Power</th>
                 <th>Status</th>
@@ -48,6 +49,7 @@
         <tbody>
             <tr>
                 <td id="rig-frequency">Loading...</td>
+                <td id="rig-tone">Loading...</td>
                 <td id="rig-mode">Loading...</td>
                 <td id="rig-power">Loading...</td>
                 <td id="rig-ptt">Loading...</td>
@@ -188,6 +190,7 @@
                 $('#server-timezone').text('N/A');
                 // Reset rig status to unavailable
                 $('#rig-frequency').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                $('#rig-tone').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                 $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                 $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                 $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
@@ -214,6 +217,7 @@
                 // Handle unavailable status
                 if (data.status === 'unavailable') {
                     $('#rig-frequency').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
+                    $('#rig-tone').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                     $('#rig-mode').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                     $('#rig-power').text('N/A').removeClass('tx-active rx-active').addClass('rig-unavailable');
                     $('#rig-ptt').text('Unavailable').removeClass('tx-active rx-active').addClass('rig-unavailable');
@@ -226,6 +230,9 @@
                 // Update individual fields if present
                 if (data.frequency) {
                     $('#rig-frequency').text(data.frequency + ' MHz').removeClass('rig-unavailable');
+                }
+                if (data.tone) {
+                    $('#rig-tone').text(data.tone).removeClass('rig-unavailable');
                 }
                 if (data.mode) {
                     $('#rig-mode').text(data.mode).removeClass('rig-unavailable');
