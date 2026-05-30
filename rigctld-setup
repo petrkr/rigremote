@@ -101,6 +101,9 @@ echo ""
 read -p "LISTEN_ADDR [$DEFAULT_LISTEN_ADDR]: " LISTEN_ADDR
 LISTEN_ADDR="${LISTEN_ADDR:-$DEFAULT_LISTEN_ADDR}"
 
+echo ""
+read -p "EXTRA_OPTIONS []: " EXTRA_OPTIONS
+
 CONFIG_FILE="${CONFIG_DIR}/rigctld.${SERIAL}"
 
 echo ""
@@ -109,6 +112,9 @@ echo "  Serial:  $SERIAL"
 echo "  RIG_ID:  $RIG_ID"
 echo "  Device:  /dev/rig_${SERIAL}"
 echo "  TCP:     ${LISTEN_ADDR}:${TCP_PORT}"
+if [ -n "$EXTRA_OPTIONS" ]; then
+    echo "  Extra:   $EXTRA_OPTIONS"
+fi
 echo "  Config:  $CONFIG_FILE"
 echo ""
 
@@ -127,6 +133,10 @@ RIG_DEVICE=/dev/rig_$SERIAL
 TCP_PORT=$TCP_PORT
 LISTEN_ADDR=$LISTEN_ADDR
 EOF
+
+if [ -n "$EXTRA_OPTIONS" ]; then
+    echo "EXTRA_OPTIONS=\"$EXTRA_OPTIONS\"" >> "$CONFIG_FILE"
+fi
 
 echo "Configuration saved to $CONFIG_FILE"
 

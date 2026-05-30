@@ -7,7 +7,7 @@ After=network.target
 ExecCondition=/bin/test -f /etc/default/rigctld.%i
 ExecCondition=/bin/sh -c ". /etc/default/rigctld.%i && test -e $${RIG_DEVICE:-/dev/ttyUSB0}"
 EnvironmentFile=-/etc/default/rigctld.%i
-ExecStart=/bin/sh -c "exec /usr/bin/rigctld -m $${RIG_ID} -r $${RIG_DEVICE:-/dev/ttyUSB0} $${TCP_PORT:+-t $${TCP_PORT}} $${LISTEN_ADDR:+-T $${LISTEN_ADDR}}"
+ExecStart=/bin/sh -c "exec /usr/bin/rigctld -m $${RIG_ID} -r $${RIG_DEVICE:-/dev/ttyUSB0} $${TCP_PORT:+-t $${TCP_PORT}} $${LISTEN_ADDR:+-T $${LISTEN_ADDR}} $${EXTRA_OPTIONS}"
 Restart=on-failure
 KillMode=control-group
 
